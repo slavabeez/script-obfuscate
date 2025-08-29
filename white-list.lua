@@ -11,7 +11,7 @@ userids = {
 [7463292400] = true, --danek0000
 [8886696744] = true, --Zabka18401841
 [2422719455] = true,
-[7614897680] = true,
+[8833197919] = true,
 [3962779128] = true
 }
 return userids
