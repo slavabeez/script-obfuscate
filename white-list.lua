@@ -12,7 +12,7 @@ userids = {
 [8886696744] = true, --Zabka18401841
 [507866332] = true, --Dieprt
 [3086061077] = true, --KIRILLXx1
-[4034949435] = true,
+[9413637094] = true,
 [2527676532] = true
 }
 return userids
