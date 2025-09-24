@@ -1,0 +1,205 @@
+local ServerScriptService = game:GetService("ServerScriptService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TextService = game:GetService("TextService")
+local Players = game:GetService("Players")
+
+-- Создаем основной RemoteEvent для коммуникации
+local AdminRemoteEvent = Instance.new("RemoteEvent")
+AdminRemoteEvent.Name = "AdminPanelRemote"
+AdminRemoteEvent.Parent = ReplicatedStorage
+
+-- Функция для создания интерфейса
+local function createAdminPanel(player)
+    local playerGui = player:WaitForChild("PlayerGui")
+    
+    -- Основной экран
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "RemoteEventManager"
+    screenGui.ResetOnSpawn = false
+    
+    -- Основной фрейм
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Size = UDim2.new(0, 400, 0, 500)
+    mainFrame.Position = UDim2.new(0.5, -200, 0.5, -250)
+    mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    mainFrame.BorderSizePixel = 0
+    mainFrame.Parent = screenGui
+    
+    -- Заголовок
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, 0, 0, 40)
+    title.Position = UDim2.new(0, 0, 0, 0)
+    title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    title.Text = "RemoteEvent Manager"
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.TextSize = 18
+    title.Font = Enum.Font.GothamBold
+    title.Parent = mainFrame
+    
+    -- Кнопка закрытия
+    local closeButton = Instance.new("TextButton")
+    closeButton.Size = UDim2.new(0, 30, 0, 30)
+    closeButton.Position = UDim2.new(1, -35, 0, 5)
+    closeButton.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
+    closeButton.Text = "X"
+    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeButton.TextSize = 14
+    closeButton.Parent = mainFrame
+    
+    -- Кнопка обновления
+    local refreshButton = Instance.new("TextButton")
+    refreshButton.Size = UDim2.new(0, 100, 0, 30)
+    refreshButton.Position = UDim2.new(0, 10, 0, 45)
+    refreshButton.BackgroundColor3 = Color3.fromRGB(60, 120, 200)
+    refreshButton.Text = "Обновить список"
+    refreshButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    refreshButton.TextSize = 14
+    refreshButton.Parent = mainFrame
+    
+    -- Кнопка очистки
+    local clearButton = Instance.new("TextButton")
+    clearButton.Size = UDim2.new(0, 100, 0, 30)
+    clearButton.Position = UDim2.new(1, -110, 0, 45)
+    clearButton.BackgroundColor3 = Color3.fromRGB(200, 80, 60)
+    clearButton.Text = "Очистить все"
+    clearButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    clearButton.TextSize = 14
+    clearButton.Parent = mainFrame
+    
+    -- Список RemoteEvents
+    local scrollFrame = Instance.new("ScrollingFrame")
+    scrollFrame.Size = UDim2.new(1, -20, 1, -120)
+    scrollFrame.Position = UDim2.new(0, 10, 0, 80)
+    scrollFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    scrollFrame.BorderSizePixel = 0
+    scrollFrame.ScrollBarThickness = 8
+    scrollFrame.Parent = mainFrame
+    
+    -- Контейнер для элементов списка
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.Parent = scrollFrame
+    
+    -- Функция для обновления списка
+    local function updateRemoteEventsList()
+        -- Очищаем текущий список
+        for _, child in ipairs(scrollFrame:GetChildren()) do
+            if child:IsA("Frame") then
+                child:Destroy()
+            end
+        end
+        
+        -- Собираем все RemoteEvents
+        local remoteEvents = {}
+        
+        -- Ищем в ReplicatedStorage
+        local function searchInContainer(container, path)
+            for _, obj in ipairs(container:GetChildren()) do
+                if obj:IsA("RemoteEvent") then
+                    table.insert(remoteEvents, {
+                        Object = obj,
+                        Path = path .. obj.Name
+                    })
+                elseif obj:IsA("Folder") or obj:IsA("ModuleScript") then
+                    searchInContainer(obj, path .. obj.Name .. ".")
+                end
+            end
+        end
+        
+        searchInContainer(ReplicatedStorage, "ReplicatedStorage.")
+        searchInContainer(ServerScriptService, "ServerScriptService.")
+        
+        -- Сортируем по имени
+        table.sort(remoteEvents, function(a, b)
+            return a.Path < b.Path
+        end)
+        
+        -- Создаем элементы списка
+        for i, remoteData in ipairs(remoteEvents) do
+            local remoteFrame = Instance.new("Frame")
+            remoteFrame.Size = UDim2.new(1, 0, 0, 60)
+            remoteFrame.BackgroundColor3 = i % 2 == 0 and Color3.fromRGB(50, 50, 50) or Color3.fromRGB(40, 40, 40)
+            remoteFrame.BorderSizePixel = 0
+            
+            local nameLabel = Instance.new("TextLabel")
+            nameLabel.Size = UDim2.new(1, -100, 0, 30)
+            nameLabel.Position = UDim2.new(0, 5, 0, 5)
+            nameLabel.BackgroundTransparency = 1
+            nameLabel.Text = remoteData.Path
+            nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+            nameLabel.TextSize = 12
+            nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+            nameLabel.TextWrapped = true
+            nameLabel.Parent = remoteFrame
+            
+            local deleteButton = Instance.new("TextButton")
+            deleteButton.Size = UDim2.new(0, 80, 0, 25)
+            deleteButton.Position = UDim2.new(1, -85, 0, 30)
+            deleteButton.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
+            deleteButton.Text = "Удалить"
+            deleteButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            deleteButton.TextSize = 12
+            deleteButton.Parent = remoteFrame
+            
+            -- Обработчик удаления отдельного RemoteEvent
+            deleteButton.MouseButton1Click:Connect(function()
+                remoteData.Object:Destroy()
+                updateRemoteEventsList()
+            end)
+            
+            remoteFrame.Parent = scrollFrame
+        end
+        
+        -- Обновляем размер контента
+        scrollFrame.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y)
+    end
+    
+    -- Обработчики кнопок
+    refreshButton.MouseButton1Click:Connect(updateRemoteEventsList)
+    
+    clearButton.MouseButton1Click:Connect(function()
+        -- Удаляем все RemoteEvents (кроме нашего основного)
+        local function clearContainer(container)
+            for _, obj in ipairs(container:GetChildren()) do
+                if obj:IsA("RemoteEvent") and obj.Name ~= "AdminPanelRemote" then
+                    obj:Destroy()
+                elseif obj:IsA("Folder") then
+                    clearContainer(obj)
+                end
+            end
+        end
+        
+        clearContainer(ReplicatedStorage)
+        clearContainer(ServerScriptService)
+        updateRemoteEventsList()
+    end)
+    
+    closeButton.MouseButton1Click:Connect(function()
+        screenGui.Enabled = false
+    end)
+    
+    -- Первоначальное обновление списка
+    updateRemoteEventsList()
+    
+    screenGui.Parent = playerGui
+    return screenGui
+end
+
+-- Обработчик запроса на открытие панели
+AdminRemoteEvent.OnServerEvent:Connect(function(player)
+    -- Здесь можно добавить проверку прав доступа
+    if player then
+        createAdminPanel(player)
+    end
+end)
+
+-- Функция для открытия панели по команде (опционально)
+Players.PlayerAdded:Connect(function(player)
+    player.Chatted:Connect(function(message)
+        if message:lower() == "/remotepanel" then
+            createAdminPanel(player)
+        end
+    end)
+end)
+
+print("RemoteEvent Manager загружен! Используйте команду /remotepanel в чате")
