@@ -1,205 +1,406 @@
-local ServerScriptService = game:GetService("ServerScriptService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TextService = game:GetService("TextService")
+-- RemoteEvent Manager
+-- Запускается с локального лаунчера игры
+
 local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
--- Создаем основной RemoteEvent для коммуникации
-local AdminRemoteEvent = Instance.new("RemoteEvent")
-AdminRemoteEvent.Name = "AdminPanelRemote"
-AdminRemoteEvent.Parent = ReplicatedStorage
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
--- Функция для создания интерфейса
-local function createAdminPanel(player)
-    local playerGui = player:WaitForChild("PlayerGui")
+-- Создание основного GUI
+local RemoteEventManager = Instance.new("ScreenGui")
+RemoteEventManager.Name = "RemoteEventManager"
+RemoteEventManager.Parent = CoreGui
+RemoteEventManager.ResetOnSpawn = false
+
+-- Основной фрейм
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 400, 0, 500)
+MainFrame.Position = UDim2.new(0, 10, 0.5, -250)
+MainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = RemoteEventManager
+
+-- Заголовок
+local Title = Instance.new("TextLabel")
+Title.Name = "Title"
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Position = UDim2.new(0, 0, 0, 0)
+Title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+Title.Text = "RemoteEvent Manager"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 18
+Title.Font = Enum.Font.GothamBold
+Title.Parent = MainFrame
+
+-- Кнопка сворачивания
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Name = "ToggleButton"
+ToggleButton.Size = UDim2.new(0, 100, 0, 30)
+ToggleButton.Position = UDim2.new(1, -100, 0, 5)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+ToggleButton.Text = "Свернуть"
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.TextSize = 14
+ToggleButton.Parent = MainFrame
+
+-- Фрейм для списка событий
+local EventsFrame = Instance.new("ScrollingFrame")
+EventsFrame.Name = "EventsFrame"
+EventsFrame.Size = UDim2.new(1, -20, 1, -120)
+EventsFrame.Position = UDim2.new(0, 10, 0, 50)
+EventsFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+EventsFrame.BorderSizePixel = 0
+EventsFrame.ScrollBarThickness = 8
+EventsFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+EventsFrame.Parent = MainFrame
+
+-- UIListLayout для событий
+local EventsListLayout = Instance.new("UIListLayout")
+EventsListLayout.Name = "EventsListLayout"
+EventsListLayout.Padding = UDim.new(0, 5)
+EventsListLayout.Parent = EventsFrame
+
+-- Панель управления
+local ControlPanel = Instance.new("Frame")
+ControlPanel.Name = "ControlPanel"
+ControlPanel.Size = UDim2.new(1, -20, 0, 50)
+ControlPanel.Position = UDim2.new(0, 10, 1, -60)
+ControlPanel.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+ControlPanel.BorderSizePixel = 0
+ControlPanel.Parent = MainFrame
+
+-- Кнопка очистки
+local ClearButton = Instance.new("TextButton")
+ClearButton.Name = "ClearButton"
+ClearButton.Size = UDim2.new(0.5, -5, 1, 0)
+ClearButton.Position = UDim2.new(0, 0, 0, 0)
+ClearButton.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
+ClearButton.Text = "Очистить все события"
+ClearButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ClearButton.TextSize = 14
+ClearButton.Parent = ControlPanel
+
+-- Кнопка обновления
+local RefreshButton = Instance.new("TextButton")
+RefreshButton.Name = "RefreshButton"
+RefreshButton.Size = UDim2.new(0.5, -5, 1, 0)
+RefreshButton.Position = UDim2.new(0.5, 5, 0, 0)
+RefreshButton.BackgroundColor3 = Color3.fromRGB(60, 120, 200)
+RefreshButton.Text = "Обновить список"
+RefreshButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+RefreshButton.TextSize = 14
+RefreshButton.Parent = ControlPanel
+
+-- Переменные для хранения данных
+local capturedEvents = {}
+local originalFireServerFunctions = {}
+local originalFireClientFunctions = {}
+local isMinimized = false
+
+-- Функция для поиска всех RemoteEvents и RemoteFunctions
+local function findRemoteObjects(parent, path)
+    local objects = {}
     
-    -- Основной экран
-    local screenGui = Instance.new("ScreenGui")
-    screenGui.Name = "RemoteEventManager"
-    screenGui.ResetOnSpawn = false
-    
-    -- Основной фрейм
-    local mainFrame = Instance.new("Frame")
-    mainFrame.Size = UDim2.new(0, 400, 0, 500)
-    mainFrame.Position = UDim2.new(0.5, -200, 0.5, -250)
-    mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-    mainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    mainFrame.BorderSizePixel = 0
-    mainFrame.Parent = screenGui
-    
-    -- Заголовок
-    local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, 0, 0, 40)
-    title.Position = UDim2.new(0, 0, 0, 0)
-    title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    title.Text = "RemoteEvent Manager"
-    title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    title.TextSize = 18
-    title.Font = Enum.Font.GothamBold
-    title.Parent = mainFrame
-    
-    -- Кнопка закрытия
-    local closeButton = Instance.new("TextButton")
-    closeButton.Size = UDim2.new(0, 30, 0, 30)
-    closeButton.Position = UDim2.new(1, -35, 0, 5)
-    closeButton.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
-    closeButton.Text = "X"
-    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    closeButton.TextSize = 14
-    closeButton.Parent = mainFrame
-    
-    -- Кнопка обновления
-    local refreshButton = Instance.new("TextButton")
-    refreshButton.Size = UDim2.new(0, 100, 0, 30)
-    refreshButton.Position = UDim2.new(0, 10, 0, 45)
-    refreshButton.BackgroundColor3 = Color3.fromRGB(60, 120, 200)
-    refreshButton.Text = "Обновить список"
-    refreshButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    refreshButton.TextSize = 14
-    refreshButton.Parent = mainFrame
-    
-    -- Кнопка очистки
-    local clearButton = Instance.new("TextButton")
-    clearButton.Size = UDim2.new(0, 100, 0, 30)
-    clearButton.Position = UDim2.new(1, -110, 0, 45)
-    clearButton.BackgroundColor3 = Color3.fromRGB(200, 80, 60)
-    clearButton.Text = "Очистить все"
-    clearButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    clearButton.TextSize = 14
-    clearButton.Parent = mainFrame
-    
-    -- Список RemoteEvents
-    local scrollFrame = Instance.new("ScrollingFrame")
-    scrollFrame.Size = UDim2.new(1, -20, 1, -120)
-    scrollFrame.Position = UDim2.new(0, 10, 0, 80)
-    scrollFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    scrollFrame.BorderSizePixel = 0
-    scrollFrame.ScrollBarThickness = 8
-    scrollFrame.Parent = mainFrame
-    
-    -- Контейнер для элементов списка
-    local listLayout = Instance.new("UIListLayout")
-    listLayout.Parent = scrollFrame
-    
-    -- Функция для обновления списка
-    local function updateRemoteEventsList()
-        -- Очищаем текущий список
-        for _, child in ipairs(scrollFrame:GetChildren()) do
-            if child:IsA("Frame") then
-                child:Destroy()
-            end
+    for _, child in ipairs(parent:GetChildren()) do
+        local currentPath = path .. "." .. child.Name
+        
+        if child:IsA("RemoteEvent") or child:IsA("RemoteFunction") then
+            table.insert(objects, {
+                Object = child,
+                Path = currentPath,
+                Type = child.ClassName
+            })
         end
         
-        -- Собираем все RemoteEvents
-        local remoteEvents = {}
-        
-        -- Ищем в ReplicatedStorage
-        local function searchInContainer(container, path)
-            for _, obj in ipairs(container:GetChildren()) do
-                if obj:IsA("RemoteEvent") then
-                    table.insert(remoteEvents, {
-                        Object = obj,
-                        Path = path .. obj.Name
-                    })
-                elseif obj:IsA("Folder") or obj:IsA("ModuleScript") then
-                    searchInContainer(obj, path .. obj.Name .. ".")
-                end
-            end
+        -- Рекурсивный поиск в дочерних объектах
+        local childObjects = findRemoteObjects(child, currentPath)
+        for _, obj in ipairs(childObjects) do
+            table.insert(objects, obj)
         end
-        
-        searchInContainer(ReplicatedStorage, "ReplicatedStorage.")
-        searchInContainer(ServerScriptService, "ServerScriptService.")
-        
-        -- Сортируем по имени
-        table.sort(remoteEvents, function(a, b)
-            return a.Path < b.Path
-        end)
-        
-        -- Создаем элементы списка
-        for i, remoteData in ipairs(remoteEvents) do
-            local remoteFrame = Instance.new("Frame")
-            remoteFrame.Size = UDim2.new(1, 0, 0, 60)
-            remoteFrame.BackgroundColor3 = i % 2 == 0 and Color3.fromRGB(50, 50, 50) or Color3.fromRGB(40, 40, 40)
-            remoteFrame.BorderSizePixel = 0
-            
-            local nameLabel = Instance.new("TextLabel")
-            nameLabel.Size = UDim2.new(1, -100, 0, 30)
-            nameLabel.Position = UDim2.new(0, 5, 0, 5)
-            nameLabel.BackgroundTransparency = 1
-            nameLabel.Text = remoteData.Path
-            nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-            nameLabel.TextSize = 12
-            nameLabel.TextXAlignment = Enum.TextXAlignment.Left
-            nameLabel.TextWrapped = true
-            nameLabel.Parent = remoteFrame
-            
-            local deleteButton = Instance.new("TextButton")
-            deleteButton.Size = UDim2.new(0, 80, 0, 25)
-            deleteButton.Position = UDim2.new(1, -85, 0, 30)
-            deleteButton.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
-            deleteButton.Text = "Удалить"
-            deleteButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-            deleteButton.TextSize = 12
-            deleteButton.Parent = remoteFrame
-            
-            -- Обработчик удаления отдельного RemoteEvent
-            deleteButton.MouseButton1Click:Connect(function()
-                remoteData.Object:Destroy()
-                updateRemoteEventsList()
-            end)
-            
-            remoteFrame.Parent = scrollFrame
-        end
-        
-        -- Обновляем размер контента
-        scrollFrame.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y)
     end
     
-    -- Обработчики кнопок
-    refreshButton.MouseButton1Click:Connect(updateRemoteEventsList)
-    
-    clearButton.MouseButton1Click:Connect(function()
-        -- Удаляем все RemoteEvents (кроме нашего основного)
-        local function clearContainer(container)
-            for _, obj in ipairs(container:GetChildren()) do
-                if obj:IsA("RemoteEvent") and obj.Name ~= "AdminPanelRemote" then
-                    obj:Destroy()
-                elseif obj:IsA("Folder") then
-                    clearContainer(obj)
-                end
-            end
-        end
-        
-        clearContainer(ReplicatedStorage)
-        clearContainer(ServerScriptService)
-        updateRemoteEventsList()
-    end)
-    
-    closeButton.MouseButton1Click:Connect(function()
-        screenGui.Enabled = false
-    end)
-    
-    -- Первоначальное обновление списка
-    updateRemoteEventsList()
-    
-    screenGui.Parent = playerGui
-    return screenGui
+    return objects
 end
 
--- Обработчик запроса на открытие панели
-AdminRemoteEvent.OnServerEvent:Connect(function(player)
-    -- Здесь можно добавить проверку прав доступа
-    if player then
-        createAdminPanel(player)
+-- Функция для перехвата RemoteEvent
+local function interceptRemoteEvent(remoteObj, path)
+    if capturedEvents[remoteObj] then
+        return -- Уже перехвачен
+    end
+    
+    local eventData = {
+        Object = remoteObj,
+        Path = path,
+        Type = remoteObj.ClassName,
+        Calls = {},
+        IsIntercepted = true
+    }
+    
+    capturedEvents[remoteObj] = eventData
+    
+    if remoteObj:IsA("RemoteEvent") then
+        -- Сохраняем оригинальную функцию
+        originalFireServerFunctions[remoteObj] = remoteObj.FireServer
+        
+        -- Перехватываем FireServer
+        remoteObj.FireServer = function(self, ...)
+            local args = {...}
+            local callData = {
+                Timestamp = os.date("%H:%M:%S"),
+                Arguments = args,
+                Type = "FireServer"
+            }
+            
+            table.insert(eventData.Calls, callData)
+            
+            -- Вызываем оригинальную функцию
+            return originalFireServerFunctions[remoteObj](self, ...)
+        end
+    elseif remoteObj:IsA("RemoteFunction") then
+        -- Сохраняем оригинальные функции
+        originalFireServerFunctions[remoteObj] = remoteObj.InvokeServer
+        originalFireClientFunctions[remoteObj] = remoteObj.InvokeClient
+        
+        -- Перехватываем InvokeServer
+        remoteObj.InvokeServer = function(self, ...)
+            local args = {...}
+            local callData = {
+                Timestamp = os.date("%H:%M:%S"),
+                Arguments = args,
+                Type = "InvokeServer"
+            }
+            
+            table.insert(eventData.Calls, callData)
+            
+            return originalFireServerFunctions[remoteObj](self, ...)
+        end
+    end
+end
+
+-- Функция для создания UI элемента события
+local function createEventUI(eventData)
+    local eventFrame = Instance.new("Frame")
+    eventFrame.Name = "EventFrame"
+    eventFrame.Size = UDim2.new(1, 0, 0, 80)
+    eventFrame.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+    eventFrame.BorderSizePixel = 0
+    eventFrame.Parent = EventsFrame
+    
+    local title = Instance.new("TextLabel")
+    title.Name = "Title"
+    title.Size = UDim2.new(1, -10, 0, 20)
+    title.Position = UDim2.new(0, 5, 0, 5)
+    title.BackgroundTransparency = 1
+    title.Text = eventData.Path
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.TextSize = 12
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.Parent = eventFrame
+    
+    local typeLabel = Instance.new("TextLabel")
+    typeLabel.Name = "Type"
+    typeLabel.Size = UDim2.new(0, 100, 0, 15)
+    typeLabel.Position = UDim2.new(0, 5, 0, 25)
+    typeLabel.BackgroundTransparency = 1
+    typeLabel.Text = "Тип: " .. eventData.Type
+    typeLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    typeLabel.TextSize = 10
+    typeLabel.TextXAlignment = Enum.TextXAlignment.Left
+    typeLabel.Parent = eventFrame
+    
+    local callsLabel = Instance.new("TextLabel")
+    callsLabel.Name = "Calls"
+    callsLabel.Size = UDim2.new(0, 100, 0, 15)
+    callsLabel.Position = UDim2.new(0, 5, 0, 40)
+    callsLabel.BackgroundTransparency = 1
+    callsLabel.Text = "Вызовы: " .. tostring(#eventData.Calls)
+    callsLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    callsLabel.TextSize = 10
+    callsLabel.TextXAlignment = Enum.TextXAlignment.Left
+    callsLabel.Parent = eventFrame
+    
+    local fireButton = Instance.new("TextButton")
+    fireButton.Name = "FireButton"
+    fireButton.Size = UDim2.new(0, 80, 0, 25)
+    fireButton.Position = UDim2.new(1, -85, 0, 5)
+    fireButton.BackgroundColor3 = Color3.fromRGB(60, 150, 60)
+    fireButton.Text = "Повторить"
+    fireButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    fireButton.TextSize = 12
+    fireButton.Parent = eventFrame
+    
+    local lastCallButton = Instance.new("TextButton")
+    lastCallButton.Name = "LastCallButton"
+    lastCallButton.Size = UDim2.new(0, 80, 0, 25)
+    lastCallButton.Position = UDim2.new(1, -85, 0, 35)
+    lastCallButton.BackgroundColor3 = Color3.fromRGB(150, 100, 60)
+    lastCallButton.Text = "Последний"
+    lastCallButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    lastCallButton.TextSize = 12
+    lastCallButton.Parent = eventFrame
+    
+    -- Функция для повторного вызова
+    fireButton.MouseButton1Click:Connect(function()
+        if eventData.Object:IsA("RemoteEvent") then
+            eventData.Object:FireServer()
+        elseif eventData.Object:IsA("RemoteFunction") then
+            eventData.Object:InvokeServer()
+        end
+    end)
+    
+    -- Функция для повторения последнего вызова
+    lastCallButton.MouseButton1Click:Connect(function()
+        if #eventData.Calls > 0 then
+            local lastCall = eventData.Calls[#eventData.Calls]
+            if eventData.Object:IsA("RemoteEvent") then
+                eventData.Object:FireServer(unpack(lastCall.Arguments))
+            elseif eventData.Object:IsA("RemoteFunction") then
+                eventData.Object:InvokeServer(unpack(lastCall.Arguments))
+            end
+        end
+    end)
+    
+    return eventFrame
+end
+
+-- Функция обновления интерфейса
+local function updateUI()
+    -- Очищаем текущий список
+    for _, child in ipairs(EventsFrame:GetChildren()) do
+        if child:IsA("Frame") and child.Name == "EventFrame" then
+            child:Destroy()
+        end
+    end
+    
+    -- Создаем элементы для каждого события
+    for _, eventData in pairs(capturedEvents) do
+        if eventData.IsIntercepted then
+            createEventUI(eventData)
+        end
+    end
+end
+
+-- Функция поиска и перехвата всех RemoteEvents
+local function findAndInterceptRemotes()
+    local allRemotes = findRemoteObjects(game, "game")
+    
+    for _, remoteData in ipairs(allRemotes) do
+        interceptRemoteEvent(remoteData.Object, remoteData.Path)
+    end
+    
+    updateUI()
+end
+
+-- Функция очистки всех событий
+local function clearAllEvents()
+    for remoteObj, eventData in pairs(capturedEvents) do
+        eventData.Calls = {}
+    end
+    updateUI()
+end
+
+-- Функция восстановления оригинальных функций
+local function restoreOriginalFunctions()
+    for remoteObj, originalFunc in pairs(originalFireServerFunctions) do
+        if remoteObj:IsA("RemoteEvent") then
+            remoteObj.FireServer = originalFunc
+        elseif remoteObj:IsA("RemoteFunction") then
+            remoteObj.InvokeServer = originalFunc
+        end
+    end
+    
+    for remoteObj, originalFunc in pairs(originalFireClientFunctions) do
+        if remoteObj:IsA("RemoteFunction") then
+            remoteObj.InvokeClient = originalFunc
+        end
+    end
+    
+    capturedEvents = {}
+    originalFireServerFunctions = {}
+    originalFireClientFunctions = {}
+end
+
+-- Обработчики кнопок
+ClearButton.MouseButton1Click:Connect(clearAllEvents)
+RefreshButton.MouseButton1Click:Connect(findAndInterceptRemotes)
+
+-- Функция сворачивания/разворачивания
+ToggleButton.MouseButton1Click:Connect(function()
+    if isMinimized then
+        -- Разворачиваем
+        MainFrame.Size = UDim2.new(0, 400, 0, 500)
+        EventsFrame.Visible = true
+        ControlPanel.Visible = true
+        ToggleButton.Text = "Свернуть"
+        isMinimized = false
+    else
+        -- Сворачиваем
+        MainFrame.Size = UDim2.new(0, 400, 0, 40)
+        EventsFrame.Visible = false
+        ControlPanel.Visible = false
+        ToggleButton.Text = "Развернуть"
+        isMinimized = true
     end
 end)
 
--- Функция для открытия панели по команде (опционально)
-Players.PlayerAdded:Connect(function(player)
-    player.Chatted:Connect(function(message)
-        if message:lower() == "/remotepanel" then
-            createAdminPanel(player)
-        end
-    end)
+-- Перетаскивание окна
+local dragging = false
+local dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    MainFrame.Position = UDim2.new(0, startPos.X.Offset + delta.X, 0.5, -250)
+end
+
+Title.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
 end)
 
-print("RemoteEvent Manager загружен! Используйте команду /remotepanel в чате")
+Title.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+
+-- Автоматический поиск новых RemoteEvents
+game.DescendantAdded:Connect(function(descendant)
+    if descendant:IsA("RemoteEvent") or descendant:IsA("RemoteFunction") then
+        wait(1) -- Даем время для полной инициализации
+        local path = descendant:GetFullName()
+        interceptRemoteEvent(descendant, path)
+        updateUI()
+    end
+end)
+
+-- Начальная инициализация
+findAndInterceptRemotes()
+
+-- Очистка при выходе из игры
+game:GetService("Players").PlayerRemoving:Connect(function(leavingPlayer)
+    if leavingPlayer == player then
+        restoreOriginalFunctions()
+        RemoteEventManager:Destroy()
+    end
+end)
+
+print("RemoteEvent Manager загружен! Меню доступно в интерфейсе.")
