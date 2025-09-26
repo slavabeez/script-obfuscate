@@ -13,7 +13,7 @@ userids = {
 [507866332] = true, --Dieprt
 [3086061077] = true, --KIRILLXx1
 [5083885841] = true,
-[2527676532] = true
+[5647760028] = true
 }
 return userids
 
