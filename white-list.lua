@@ -17,7 +17,7 @@ userids = {
 [2004089352] = true, --Jebronchik
 [93636947] = true, --s125388152358671
 [1690411708] = true,
-[1690411708] = true,
+[1268960104] = true,
 [5647760028] = true
 }
 return userids
