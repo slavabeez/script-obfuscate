@@ -20,7 +20,7 @@ userids = {
 [4000021698] = true, --RONEXZXCXZ
 [9047812814] = true,
 [2768583285] = true,
-[4734799999] = true,
+[4734799999] = true, --s0mple575
 [4235585218] = true
 }
 return userids
