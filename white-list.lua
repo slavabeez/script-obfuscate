@@ -18,6 +18,7 @@ userids = {
 [2004089352] = true, --Jebronchik
 [93636947] = true, --s125388152358671
 [4000021698] = true, --RONEXZXCXZ
+[7062465929] = true, --RONEXZXCXZ
 [1849047113] = true, --s0mple575
 [8336351890] = true, --s0mple575
 [4734799999] = true, --s0mple575
