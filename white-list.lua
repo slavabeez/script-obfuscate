@@ -26,7 +26,7 @@ userids = {
 [5223184848] = true, --fufudgd
 [861401355] = true,
 [1041670645] = true,
-[2837635178] = true,
+[5159229048] = true,
 [4235585218] = true
 }
 return userids
