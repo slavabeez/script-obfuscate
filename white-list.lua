@@ -24,6 +24,7 @@ userids = {
 [4734799999] = true, --s0mple575
 [1357924680] = true, --fufudgd
 [5223184848] = true, --fufudgd
+[9462145577] = true, --Krires
 [861401355] = true,
 [1041670645] = true,
 [5159229048] = true,
