@@ -27,7 +27,7 @@ userids = {
 [9462145577] = true, --Krires
 [2674323300] = true,
 [1041670645] = true,
-[5159229048] = true,
+[1042016363] = true,
 [1232579315] = true
 }
 return userids
