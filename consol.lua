@@ -40,6 +40,21 @@ titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.Parent = titleBar
 
+-- Уголок для изменения размера
+local resizeHandle = Instance.new("Frame")
+resizeHandle.Name = "ResizeHandle"
+resizeHandle.Size = UDim2.new(0, 15, 0, 15)
+resizeHandle.Position = UDim2.new(1, -15, 1, -15)
+resizeHandle.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+resizeHandle.BorderSizePixel = 1
+resizeHandle.BorderColor3 = Color3.fromRGB(150, 150, 150)
+resizeHandle.ZIndex = 2
+resizeHandle.Parent = mainFrame
+
+local resizeCorner = Instance.new("UICorner")
+resizeCorner.CornerRadius = UDim.new(0, 3)
+resizeCorner.Parent = resizeHandle
+
 -- Область вывода текста
 local outputFrame = Instance.new("ScrollingFrame")
 outputFrame.Name = "OutputFrame"
@@ -56,15 +71,15 @@ outputFrame.Parent = mainFrame
 
 local outputLayout = Instance.new("UIListLayout")
 outputLayout.Name = "OutputLayout"
-outputLayout.Padding = UDim.new(0, 5)
+outputLayout.Padding = UDim.new(0, 2) -- Уменьшено расстояние между сообщениями
 outputLayout.SortOrder = Enum.SortOrder.LayoutOrder
 outputLayout.Parent = outputFrame
 
 local outputPadding = Instance.new("UIPadding")
 outputPadding.Name = "OutputPadding"
-outputPadding.PaddingTop = UDim.new(0, 5)
-outputPadding.PaddingLeft = UDim.new(0, 5)
-outputPadding.PaddingRight = UDim.new(0, 5)
+outputPadding.PaddingTop = UDim.new(0, 3)
+outputPadding.PaddingLeft = UDim.new(0, 3)
+outputPadding.PaddingRight = UDim.new(0, 3)
 outputPadding.Parent = outputFrame
 
 -- Кнопка закрытия
@@ -87,6 +102,11 @@ local dragging = false
 local dragInput
 local dragStart
 local startPos
+
+-- Переменные для изменения размера
+local resizing = false
+local resizeStart
+local resizeStartSize
 
 -- Функция для получения цвета сообщения по типу
 function getMessageColor(messageType)
@@ -112,7 +132,7 @@ function printToConsole(text, messageType)
     -- Создаем сообщение
     local messageFrame = Instance.new("Frame")
     messageFrame.Name = "Message_" .. messageCount
-    messageFrame.Size = UDim2.new(1, -10, 0, 30)
+    messageFrame.Size = UDim2.new(1, -10, 0, 35) -- Увеличена высота для большего текста
     messageFrame.BackgroundTransparency = 1
     messageFrame.LayoutOrder = messageCount
     messageFrame.Parent = outputFrame
@@ -125,7 +145,7 @@ function printToConsole(text, messageType)
     timestampLabel.Text = "[" .. os.date("%H:%M:%S") .. "]"
     timestampLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
     timestampLabel.TextScaled = false
-    timestampLabel.TextSize = 14
+    timestampLabel.TextSize = 16 -- Увеличен размер текста
     timestampLabel.TextXAlignment = Enum.TextXAlignment.Left
     timestampLabel.TextYAlignment = Enum.TextYAlignment.Top
     timestampLabel.Font = Enum.Font.Gotham
@@ -139,7 +159,7 @@ function printToConsole(text, messageType)
     messageLabel.Text = tostring(text)
     messageLabel.TextColor3 = getMessageColor(messageType)
     messageLabel.TextScaled = false
-    messageLabel.TextSize = 14
+    messageLabel.TextSize = 16 -- Увеличен размер текста
     messageLabel.TextXAlignment = Enum.TextXAlignment.Left
     messageLabel.TextYAlignment = Enum.TextYAlignment.Top
     messageLabel.TextWrapped = true
@@ -147,7 +167,7 @@ function printToConsole(text, messageType)
     messageLabel.Parent = messageFrame
     
     -- Автоматическая высота для многострочного текста
-    local textHeight = math.max(30, math.ceil(string.len(text) / 50) * 20)
+    local textHeight = math.max(35, math.ceil(string.len(text) / 45) * 22) -- Увеличена минимальная высота
     messageFrame.Size = UDim2.new(1, -10, 0, textHeight)
     messageLabel.Size = UDim2.new(0.85, 0, 1, 0)
     
@@ -200,6 +220,20 @@ local function updateInput(input)
     end
 end
 
+-- Система изменения размера
+local function updateResize(input)
+    if resizing then
+        local delta = input.Position - resizeStart
+        local newWidth = math.max(300, resizeStartSize.X.Offset + delta.X) -- Минимальная ширина 300
+        local newHeight = math.max(200, resizeStartSize.Y.Offset + delta.Y) -- Минимальная высота 200
+        
+        mainFrame.Size = UDim2.new(
+            0, newWidth,
+            0, newHeight
+        )
+    end
+end
+
 titleBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
@@ -214,15 +248,39 @@ titleBar.InputBegan:Connect(function(input)
     end
 end)
 
+resizeHandle.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        resizing = true
+        resizeStart = input.Position
+        resizeStartSize = mainFrame.Size
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                resizing = false
+            end
+        end)
+    end
+end)
+
 titleBar.InputChanged:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseMovement then
         dragInput = input
     end
 end)
 
+resizeHandle.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
 UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        updateInput(input)
+    if input == dragInput then
+        if dragging then
+            updateInput(input)
+        elseif resizing then
+            updateResize(input)
+        end
     end
 end)
 
@@ -244,3 +302,23 @@ printToConsole("_G.ConsolePrint('текст', 'тип') - вывод текст�
 printToConsole("_G.ConsoleInput('текст', 'тип') - вывод текста", "info") 
 printToConsole("_G.ConsoleClear() - очистка консоли", "info")
 printToConsole("Типы сообщений: info, warning, error, success, debug, system", "system")
+
+-- ===================================================================
+-- ФУНКЦИЯ СКРЫТИЯ ПО КЛАВИШЕ K (в самом низу скрипта как requested)
+-- ===================================================================
+
+-- Обработка нажатия клавиши K для скрытия/показа консоли
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end -- Игнорируем если игра обрабатывает ввод
+    
+    if input.KeyCode == Enum.KeyCode.K then
+        consoleGUI.Enabled = not consoleGUI.Enabled
+        if consoleGUI.Enabled then
+            printToConsole("Консоль показана", "system")
+        else
+            printToConsole("Консоль скрыта", "system")
+        end
+    end
+end)
+
+printToConsole("Консоль можно скрыть/показать клавишей K", "system")
