@@ -34,7 +34,7 @@ titleLabel.Name = "TitleLabel"
 titleLabel.Size = UDim2.new(0.95, 0, 1, 0)
 titleLabel.Position = UDim2.new(0, 0, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "Консоль Roblox (перетащите за заголовок)"
+titleLabel.Text = "TDS auto farm"
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
@@ -71,15 +71,16 @@ outputFrame.Parent = mainFrame
 
 local outputLayout = Instance.new("UIListLayout")
 outputLayout.Name = "OutputLayout"
-outputLayout.Padding = UDim.new(0, 2) -- Уменьшено расстояние между сообщениями
+outputLayout.Padding = UDim.new(0, 1) -- Минимальное расстояние между сообщениями
 outputLayout.SortOrder = Enum.SortOrder.LayoutOrder
 outputLayout.Parent = outputFrame
 
 local outputPadding = Instance.new("UIPadding")
 outputPadding.Name = "OutputPadding"
-outputPadding.PaddingTop = UDim.new(0, 3)
-outputPadding.PaddingLeft = UDim.new(0, 3)
-outputPadding.PaddingRight = UDim.new(0, 3)
+outputPadding.PaddingTop = UDim.new(0, 2)
+outputPadding.PaddingLeft = UDim.new(0, 2)
+outputPadding.PaddingRight = UDim.new(0, 2)
+outputPadding.PaddingBottom = UDim.new(0, 2)
 outputPadding.Parent = outputFrame
 
 -- Кнопка закрытия
@@ -132,7 +133,7 @@ function printToConsole(text, messageType)
     -- Создаем сообщение
     local messageFrame = Instance.new("Frame")
     messageFrame.Name = "Message_" .. messageCount
-    messageFrame.Size = UDim2.new(1, -10, 0, 35) -- Увеличена высота для большего текста
+    messageFrame.Size = UDim2.new(1, -10, 0, 25) -- Уменьшена высота для плотного расположения
     messageFrame.BackgroundTransparency = 1
     messageFrame.LayoutOrder = messageCount
     messageFrame.Parent = outputFrame
@@ -145,9 +146,9 @@ function printToConsole(text, messageType)
     timestampLabel.Text = "[" .. os.date("%H:%M:%S") .. "]"
     timestampLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
     timestampLabel.TextScaled = false
-    timestampLabel.TextSize = 16 -- Увеличен размер текста
+    timestampLabel.TextSize = 14 -- Немного уменьшен для плотности
     timestampLabel.TextXAlignment = Enum.TextXAlignment.Left
-    timestampLabel.TextYAlignment = Enum.TextYAlignment.Top
+    timestampLabel.TextYAlignment = Enum.TextYAlignment.Center -- Выравнивание по центру
     timestampLabel.Font = Enum.Font.Gotham
     timestampLabel.Parent = messageFrame
     
@@ -159,15 +160,16 @@ function printToConsole(text, messageType)
     messageLabel.Text = tostring(text)
     messageLabel.TextColor3 = getMessageColor(messageType)
     messageLabel.TextScaled = false
-    messageLabel.TextSize = 16 -- Увеличен размер текста
+    messageLabel.TextSize = 14 -- Немного уменьшен для плотности
     messageLabel.TextXAlignment = Enum.TextXAlignment.Left
-    messageLabel.TextYAlignment = Enum.TextYAlignment.Top
-    messageLabel.TextWrapped = true
+    messageLabel.TextYAlignment = Enum.TextYAlignment.Center -- Выравнивание по центру
+    messageLabel.TextWrapped = false -- Отключен перенос для однострочности
     messageLabel.Font = Enum.Font.Gotham
     messageLabel.Parent = messageFrame
     
-    -- Автоматическая высота для многострочного текста
-    local textHeight = math.max(35, math.ceil(string.len(text) / 45) * 22) -- Увеличена минимальная высота
+    -- Автоматическая высота для многострочного текста (минимальная)
+    local lineCount = math.ceil(string.len(text) / 60) -- Увеличено количество символов на строку
+    local textHeight = math.max(20, lineCount * 18) -- Уменьшена высота строки
     messageFrame.Size = UDim2.new(1, -10, 0, textHeight)
     messageLabel.Size = UDim2.new(0.85, 0, 1, 0)
     
