@@ -1,17 +1,12 @@
--- LocalScript в StarterPlayerScripts
-
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-
--- Создаем GUI
 local consoleGUI = Instance.new("ScreenGui")
 consoleGUI.Name = "ConsoleGUI"
 consoleGUI.Parent = playerGui
 
--- Основной фрейм консоли
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
 mainFrame.Size = UDim2.new(0.6, 0, 0.7, 0)
@@ -21,7 +16,7 @@ mainFrame.BorderSizePixel = 2
 mainFrame.BorderColor3 = Color3.fromRGB(80, 80, 80)
 mainFrame.Parent = consoleGUI
 
--- Заголовок консоли (для перемещения)
+-- Заголовок консоли
 local titleBar = Instance.new("Frame")
 titleBar.Name = "TitleBar"
 titleBar.Size = UDim2.new(1, 0, 0.05, 0)
@@ -123,7 +118,7 @@ function getMessageColor(messageType)
     return colors[messageType] or colors.info
 end
 
--- Функция для вывода текста в консоль (исправленная)
+-- Функция для вывода текста в консоль
 function printToConsole(text, messageType)
     messageType = messageType or "info"
     
@@ -133,7 +128,7 @@ function printToConsole(text, messageType)
     -- Создаем сообщение
     local messageFrame = Instance.new("Frame")
     messageFrame.Name = "Message_" .. messageCount
-    messageFrame.Size = UDim2.new(1, -10, 0, 25) -- Уменьшена высота для плотного расположения
+    messageFrame.Size = UDim2.new(1, -10, 0, 25)
     messageFrame.BackgroundTransparency = 1
     messageFrame.LayoutOrder = messageCount
     messageFrame.Parent = outputFrame
@@ -148,7 +143,7 @@ function printToConsole(text, messageType)
     timestampLabel.TextScaled = false
     timestampLabel.TextSize = 14 -- Немного уменьшен для плотности
     timestampLabel.TextXAlignment = Enum.TextXAlignment.Left
-    timestampLabel.TextYAlignment = Enum.TextYAlignment.Center -- Выравнивание по центру
+    timestampLabel.TextYAlignment = Enum.TextYAlignment.Center
     timestampLabel.Font = Enum.Font.Gotham
     timestampLabel.Parent = messageFrame
     
@@ -162,14 +157,14 @@ function printToConsole(text, messageType)
     messageLabel.TextScaled = false
     messageLabel.TextSize = 14 -- Немного уменьшен для плотности
     messageLabel.TextXAlignment = Enum.TextXAlignment.Left
-    messageLabel.TextYAlignment = Enum.TextYAlignment.Center -- Выравнивание по центру
-    messageLabel.TextWrapped = false -- Отключен перенос для однострочности
+    messageLabel.TextYAlignment = Enum.TextYAlignment.Center
+    messageLabel.TextWrapped = false
     messageLabel.Font = Enum.Font.Gotham
     messageLabel.Parent = messageFrame
     
     -- Автоматическая высота для многострочного текста (минимальная)
-    local lineCount = math.ceil(string.len(text) / 60) -- Увеличено количество символов на строку
-    local textHeight = math.max(20, lineCount * 18) -- Уменьшена высота строки
+    local lineCount = math.ceil(string.len(text) / 60)
+    local textHeight = math.max(20, lineCount * 18)
     messageFrame.Size = UDim2.new(1, -10, 0, textHeight)
     messageLabel.Size = UDim2.new(0.85, 0, 1, 0)
     
@@ -297,17 +292,9 @@ _G.ConsoleInput = inputToConsole
 _G.ConsoleClear = clearConsole
 
 -- Инициализация консоли
-wait(0.5) -- Ждем инициализации
+wait(0.5) 
 printToConsole("Консоль инициализирована!", "success")
-printToConsole("Используйте функции:", "system")
-printToConsole("_G.ConsolePrint('текст', 'тип') - вывод текста", "info")
-printToConsole("_G.ConsoleInput('текст', 'тип') - вывод текста", "info") 
-printToConsole("_G.ConsoleClear() - очистка консоли", "info")
-printToConsole("Типы сообщений: info, warning, error, success, debug, system", "system")
 
--- ===================================================================
--- ФУНКЦИЯ СКРЫТИЯ ПО КЛАВИШЕ K (в самом низу скрипта как requested)
--- ===================================================================
 
 -- Обработка нажатия клавиши K для скрытия/показа консоли
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
@@ -315,12 +302,207 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     
     if input.KeyCode == Enum.KeyCode.K then
         consoleGUI.Enabled = not consoleGUI.Enabled
-        if consoleGUI.Enabled then
-            printToConsole("Консоль показана", "system")
+
+printToConsole("Консоль можно скрыть/показать клавишей K", "system")
+
+-- LocalScript в StarterPlayerScripts (отдельный скрипт)
+-- Название: ClearConsoleButton
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local UserInputService = game:GetService("UserInputService")
+
+-- Ждем пока основная консоль загрузится и создаст глобальные функции
+local function waitForConsole()
+    while true do
+        if _G.ConsoleClear then
+            return true
+        end
+        wait(0.5)
+    end
+end
+
+-- Создаем кнопку очистки консоли
+local clearButtonGUI = Instance.new("ScreenGui")
+clearButtonGUI.Name = "ClearConsoleButtonGUI"
+clearButtonGUI.Parent = playerGui
+
+local clearButton = Instance.new("TextButton")
+clearButton.Name = "ClearConsoleButton"
+clearButton.Size = UDim2.new(0, 150, 0, 40)
+clearButton.Position = UDim2.new(0, 10, 0, 10) -- Верхний левый угол
+clearButton.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
+clearButton.BorderSizePixel = 2
+clearButton.BorderColor3 = Color3.fromRGB(100, 30, 30)
+clearButton.Text = "Очистить консоль"
+clearButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+clearButton.TextScaled = true
+clearButton.Font = Enum.Font.GothamBold
+clearButton.ZIndex = 10
+clearButton.Parent = clearButtonGUI
+
+-- Переменные для перетаскивания
+local dragging = false
+local dragInput
+local dragStart
+local startPos
+
+-- Функция для очистки консоли
+local function clearConsole()
+    if _G.ConsoleClear then
+        _G.ConsoleClear()
+        return true
+    else
+        warn("Функция ConsoleClear не найдена! Консоль еще не загружена.")
+        return false
+    end
+end
+
+-- Функция обновления позиции при перетаскивании
+local function updateInput(input)
+    if dragging then
+        local delta = input.Position - dragStart
+        clearButton.Position = UDim2.new(
+            startPos.X.Scale, 
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale, 
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end
+
+-- Обработчики для перетаскивания
+clearButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = clearButton.Position
+        
+        -- Меняем внешний вид при захвате для перетаскивания
+        clearButton.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
+        clearButton.Text = "Перетаскивается..."
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+                -- Возвращаем нормальный вид
+                clearButton.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
+                clearButton.Text = "Очистить консоль"
+            end
+        end)
+    end
+end)
+
+clearButton.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        updateInput(input)
+    end
+end)
+
+-- Обработчик нажатия кнопки (очистка консоли)
+clearButton.MouseButton1Click:Connect(function()
+    -- Если не перетаскивали (короткое нажатие)
+    if not dragging then
+        local success = clearConsole()
+        
+        if success then
+            -- Визуальная обратная связь при успешной очистке
+            clearButton.Text = "Очищено!"
+            clearButton.BackgroundColor3 = Color3.fromRGB(60, 200, 60)
+            
+            -- Возвращаем исходный вид через 1 секунду
+            wait(1)
+            clearButton.Text = "Очистить консоль"
+            clearButton.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
         else
-            printToConsole("Консоль скрыта", "system")
+            -- Визуальная обратная связь при ошибке
+            clearButton.Text = "Ошибка!"
+            clearButton.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
+            
+            wait(1)
+            clearButton.Text = "Очистить консоль"
+            clearButton.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
         end
     end
 end)
 
-printToConsole("Консоль можно скрыть/показать клавишей K", "system")
+-- Анимации для кнопки
+clearButton.MouseEnter:Connect(function()
+    if not dragging then
+        clearButton.BackgroundColor3 = Color3.fromRGB(220, 80, 80)
+    end
+end)
+
+clearButton.MouseLeave:Connect(function()
+    if not dragging then
+        clearButton.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
+    end
+end)
+
+-- Обработка клавиши K для скрытия/показа кнопки вместе с консолью
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.KeyCode == Enum.KeyCode.K then
+        -- Переключаем видимость кнопки
+        clearButtonGUI.Enabled = not clearButtonGUI.Enabled
+        
+        -- Если кнопка стала видимой, выводим сообщение в консоль
+        if clearButtonGUI.Enabled and _G.ConsolePrint then
+            _G.ConsolePrint("Кнопка очистки показана", "system")
+        elseif not clearButtonGUI.Enabled and _G.ConsolePrint then
+            _G.ConsolePrint("Кнопка очистки скрыта", "system")
+        end
+    end
+end)
+
+-- Функция для принудительного скрытия/показа кнопки
+_G.HideClearButton = function()
+    clearButtonGUI.Enabled = false
+end
+
+_G.ShowClearButton = function()
+    clearButtonGUI.Enabled = true
+end
+
+_G.ToggleClearButton = function()
+    clearButtonGUI.Enabled = not clearButtonGUI.Enabled
+end
+
+-- Автоматическая проверка доступности консоли
+spawn(function()
+    if waitForConsole() then
+        print("Кнопка очистки консоли готова к использованию!")
+        print("Зажимайте кнопку для перетаскивания")
+        print("Нажимайте K для скрытия/показа вместе с консолью")
+        
+        -- Выводим сообщение в консоль о готовности кнопки
+        if _G.ConsolePrint then
+            _G.ConsolePrint("Кнопка очистки консоли загружена!", "success")
+            _G.ConsolePrint("Зажимайте кнопку для перетаскивания", "info")
+            _G.ConsolePrint("Нажимайте K для скрытия/показа", "info")
+        end
+    end
+end)
+
+-- Дополнительно: синхронизация с консолью если она найдена
+spawn(function()
+    while true do
+        wait(0.5)
+        -- Попробуем найти GUI консоли и синхронизироваться с ним
+        local consoleGUI = playerGui:FindFirstChild("ConsoleGUI")
+        if consoleGUI then
+            -- Синхронизируем видимость с консолью
+            if clearButtonGUI.Enabled ~= consoleGUI.Enabled then
+                clearButtonGUI.Enabled = consoleGUI.Enabled
+            end
+        end
+    end
+end)
