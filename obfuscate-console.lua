@@ -6,12 +6,10 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Упрощенная функция для защиты GUI
 local function protect_gui(gui)
     gui.Parent = CoreGui
 end
 
--- Функция для генерации случайных строк
 local function RandomString(len)
     local s = ""
     local chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -22,18 +20,15 @@ local function RandomString(len)
     return s
 end
 
--- Создаем глобальные таблицы если их нет
 local _G = _G or getfenv()
 local _E = _E or {}
 _E.RS = RandomString
 
--- Создаем GUI консоли
 local consoleGUI = Instance.new("ScreenGui")
 consoleGUI.Name = "ConsoleGUI_" .. _E.RS(8)
 consoleGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 protect_gui(consoleGUI)
 
--- Основной фрейм
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame_" .. _E.RS(8)
 mainFrame.Size = UDim2.new(0, 600, 0, 450)
@@ -44,12 +39,10 @@ mainFrame.BorderSizePixel = 0
 mainFrame.ClipsDescendants = true
 mainFrame.Parent = consoleGUI
 
--- Стилизация основного фрейма
 local UICorner1 = Instance.new("UICorner")
 UICorner1.CornerRadius = UDim.new(0, 8)
 UICorner1.Parent = mainFrame
 
--- Заголовок
 local titleBar = Instance.new("Frame")
 titleBar.Name = "TitleBar_" .. _E.RS(7)
 titleBar.Size = UDim2.new(1, 0, 0.07, 0)
@@ -61,7 +54,6 @@ local UICorner2 = Instance.new("UICorner")
 UICorner2.CornerRadius = UDim.new(0, 8)
 UICorner2.Parent = titleBar
 
--- Заголовок консоли
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Name = "TitleLabel_" .. _E.RS(6)
 titleLabel.Size = UDim2.new(0.7, 0, 1, 0)
@@ -73,7 +65,6 @@ titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.Parent = titleBar
 
--- Таймер выполнения
 local runtimeLabel = Instance.new("TextLabel")
 runtimeLabel.Name = "RuntimeLabel_" .. _E.RS(6)
 runtimeLabel.Size = UDim2.new(0.1, 0, 1, 0)
@@ -86,7 +77,6 @@ runtimeLabel.Font = Enum.Font.Gotham
 runtimeLabel.TextXAlignment = Enum.TextXAlignment.Right
 runtimeLabel.Parent = titleBar
 
--- Кнопка сворачивания
 local minimizeButton = Instance.new("TextButton")
 minimizeButton.Name = "MinimizeBtn_" .. _E.RS(9)
 minimizeButton.Size = UDim2.new(0.06, 0, 0.6, 0)
@@ -98,7 +88,7 @@ minimizeButton.TextScaled = true
 minimizeButton.Font = Enum.Font.GothamBold
 minimizeButton.Parent = titleBar
 
--- Кнопка закрытия
+
 local closeButton = Instance.new("TextButton")
 closeButton.Name = "CloseBtn_" .. _E.RS(9)
 closeButton.Size = UDim2.new(0.06, 0, 0.6, 0)
@@ -109,7 +99,7 @@ closeButton.TextColor3 = Color3.fromRGB(220, 220, 220)
 closeButton.TextScaled = true
 closeButton.Parent = titleBar
 
--- Стилизация кнопок
+
 local UICorner3 = Instance.new("UICorner")
 UICorner3.CornerRadius = UDim.new(0, 4)
 UICorner3.Parent = minimizeButton
@@ -118,7 +108,6 @@ local UICorner4 = Instance.new("UICorner")
 UICorner4.CornerRadius = UDim.new(0, 4)
 UICorner4.Parent = closeButton
 
--- Область вывода текста
 local outputFrame = Instance.new("ScrollingFrame")
 outputFrame.Name = "OutputFrame_" .. _E.RS(11)
 outputFrame.Size = UDim2.new(1, -10, 0.86, -5)
@@ -136,7 +125,6 @@ local UICorner5 = Instance.new("UICorner")
 UICorner5.CornerRadius = UDim.new(0, 6)
 UICorner5.Parent = outputFrame
 
--- Layout для сообщений
 local outputLayout = Instance.new("UIListLayout")
 outputLayout.Name = "OutputLayout_" .. _E.RS(12)
 outputLayout.Padding = UDim.new(0, 3)
@@ -151,7 +139,6 @@ outputPadding.PaddingRight = UDim.new(0, 8)
 outputPadding.PaddingBottom = UDim.new(0, 8)
 outputPadding.Parent = outputFrame
 
--- Кнопка очистки
 local clearButton = Instance.new("TextButton")
 clearButton.Name = "ClearBtn_" .. _E.RS(14)
 clearButton.Size = UDim2.new(0.12, 0, 0.06, 0)
@@ -167,7 +154,6 @@ local UICorner6 = Instance.new("UICorner")
 UICorner6.CornerRadius = UDim.new(0, 4)
 UICorner6.Parent = clearButton
 
--- Элемент для изменения размера
 local resizeHandle = Instance.new("Frame")
 resizeHandle.Name = "ResizeHandle_" .. _E.RS(15)
 resizeHandle.Size = UDim2.new(0, 16, 0, 16)
@@ -182,7 +168,6 @@ local resizeCorner = Instance.new("UICorner")
 resizeCorner.CornerRadius = UDim.new(0, 3)
 resizeCorner.Parent = resizeHandle
 
--- Функции для работы с сообщениями
 local function getMessageType(messageType)
     local types = {
         info = "[INFO]",
@@ -228,13 +213,11 @@ function _E.printToConsole(text, messageType)
     messageLabel.Font = Enum.Font.Gotham
     messageLabel.LayoutOrder = #outputFrame:GetChildren()
     messageLabel.Parent = outputFrame
-    
-    -- Авто-скролл вниз
+    --авто скрол
     task.wait(0.05)
     outputFrame.CanvasPosition = Vector2.new(0, outputFrame.AbsoluteCanvasSize.Y)
 end
 
--- Функция очистки консоли
 function _E.clearConsole()
     for _, child in ipairs(outputFrame:GetChildren()) do
         if child:IsA("TextLabel") then
@@ -244,7 +227,6 @@ function _E.clearConsole()
     _E.printToConsole("Console cleared", "system")
 end
 
--- Система перетаскивания
 local dragging = false
 local dragInput
 local dragStart
@@ -277,7 +259,6 @@ local function updateResize(input)
     end
 end
 
--- Обработчики событий для перетаскивания
 titleBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
@@ -326,7 +307,7 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- Обработчики кнопок
+
 minimizeButton.MouseButton1Click:Connect(function()
     consoleGUI.Enabled = not consoleGUI.Enabled
 end)
@@ -342,14 +323,13 @@ clearButton.MouseButton1Click:Connect(function()
     _E.clearConsole()
 end)
 
--- Глобальные функции для использования в других скриптах
+
 _G.print = _E.printToConsole
 _G.clearConsole = _E.clearConsole
 _G.consoleToggle = function()
     consoleGUI.Enabled = not consoleGUI.Enabled
 end
 
--- Горячая клавиша для показа/скрытия консоли
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     if input.KeyCode == Enum.KeyCode.F8 then
@@ -357,7 +337,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- Таймер выполнения
+
 local startTime = os.time()
 
 local function formatTime(seconds)
@@ -374,7 +354,6 @@ local function formatTime(seconds)
     end
 end
 
--- Обновление таймера
 task.spawn(function()
     while consoleGUI.Parent do
         local elapsed = os.time() - startTime
@@ -383,15 +362,11 @@ task.spawn(function()
     end
 end)
 
--- Тестовые сообщения при запуске
 task.delay(1, function()
     _E.printToConsole("Console initialized successfully!", "success")
-    _E.printToConsole("Use _G.print('message', 'type') to output text", "info")
-    _E.printToConsole("Available types: info, warning, error, success, debug, system", "info")
     _E.printToConsole("Press F8 to hide/show console", "system")
 end)
 
--- Убеждаемся что GUI добавлен в правильное место
 if not consoleGUI.Parent then
     consoleGUI.Parent = CoreGui
 end
