@@ -411,6 +411,130 @@ function _E.sendWebhook()
     end
 end
 
+-- Функция для отправки кастомного вебхука с гемами
+function _E.sendGemsWebhook(currentGems, totalReceived)
+    local webhook = getgenv().Webhook
+    if webhook == "" or webhook == nil then
+        _E.printToConsole("Webhook URL is empty", "error")
+        return false
+    end
+    
+    if not string.find(webhook, "https://discord.com/api/webhooks/") then
+        _E.printToConsole("Invalid webhook URL format", "error")
+        return false
+    end
+    
+    local playerName = player.Name
+    
+    local runTimeSeconds = tick() - (startTime or tick())
+    local runHours = math.floor(runTimeSeconds / 3600)
+    local runMinutes = math.floor((runTimeSeconds % 3600) / 60)
+    local runSeconds = math.floor(runTimeSeconds % 60)
+    local runTime = string.format("%02d:%02d:%02d", runHours, runMinutes, runSeconds)
+    
+    local embed = {
+        title = "💎 Gems - TDS",
+        color = 0x8B00FF,
+        fields = {
+            {
+                name = "👤 Player:",
+                value = "```" .. tostring(playerName) .. "```",
+                inline = false
+            },
+            {
+                name = "💎 Current Gems:",
+                value = "```" .. tostring(currentGems) .. "```",
+                inline = true
+            },
+            {
+                name = "⭐ Total Received:",
+                value = "```" .. tostring(totalReceived) .. "```",
+                inline = true
+            },
+            {
+                name = "⏰ Local Time",
+                value = "```" .. os.date("%H:%M:%S") .. "```",
+                inline = true
+            },
+            {
+                name = "🕐 Run Time",
+                value = "```" .. runTime .. "```",
+                inline = true
+            }
+        },
+        footer = {
+            text = "TDS Farmer • " .. os.date("%d.%m.%Y")
+        },
+        timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
+    }
+    
+    local payload = {
+        username = "TDS Farmer",
+        avatar_url = "https://cdn-icons-png.flaticon.com/512/4708/4708820.png",
+        embeds = {embed}
+    }
+    
+    local jsonSuccess, jsonData = pcall(function()
+        return HttpService:JSONEncode(payload)
+    end)
+    
+    if not jsonSuccess then
+        _E.printToConsole("JSON encoding failed: " .. tostring(jsonData), "error")
+        return false
+    end
+    
+    local decodeSuccess = pcall(function()
+        return HttpService:JSONDecode(jsonData)
+    end)
+    
+    if not decodeSuccess then
+        _E.printToConsole("Invalid JSON generated", "error")
+        return false
+    end
+    
+    _E.printToConsole("Sending gems webhook...", "debug")
+    
+    local requestData = {
+        Url = webhook,
+        Method = "POST",
+        Headers = {
+            ["Content-Type"] = "application/json"
+        },
+        Body = jsonData
+    }
+    
+    local httpRequest = (syn and syn.request) or (http and http.request) or (http_request) or (fluxus and fluxus.request) or (request)
+    
+    if not httpRequest then
+        _E.printToConsole("No HTTP request method available", "error")
+        return false
+    end
+    
+    local success, response = pcall(function()
+        return httpRequest(requestData)
+    end)
+    
+    if success then
+        if response then
+            _E.printToConsole("Response Code: " .. tostring(response.StatusCode), "debug")
+            
+            if response.StatusCode == 204 or response.StatusCode == 200 then
+                _E.printToConsole("📨 Gems webhook sent successfully!", "success")
+                return true
+            else
+                _E.printToConsole("Gems webhook failed with status " .. tostring(response.StatusCode), "error")
+                return false
+            end
+        else
+            _E.printToConsole("No response received", "error")
+            return false
+        end
+    else
+        _E.printToConsole("Failed to send gems webhook: " .. tostring(response), "error")
+        return false
+    end
+end
+
 -- Функция тестирования вебхука
 function _E.testWebhook()
     local webhook = getgenv().Webhook
@@ -644,6 +768,7 @@ closeButton.MouseButton1Click:Connect(function()
     _G.consoleToggle = nil
     _G.sendWebhook = nil
     _G.testWebhook = nil
+    _G.sendGemsWebhook = nil
 end)
 
 clearButton.MouseButton1Click:Connect(function()
@@ -655,6 +780,7 @@ _G.print = _E.printToConsole
 _G.clearConsole = _E.clearConsole
 _G.sendWebhook = _E.sendWebhook
 _G.testWebhook = _E.testWebhook
+_G.sendGemsWebhook = _E.sendGemsWebhook  -- ← НОВАЯ ФУНКЦИЯ
 _G.consoleToggle = function()
     consoleGUI.Enabled = not consoleGUI.Enabled
 end
@@ -698,11 +824,6 @@ task.delay(1, function()
     end
 end)
 
-if not consoleGUI.Parent then
-    consoleGUI.Parent = CoreGui
-end
-
-return _E
 if not consoleGUI.Parent then
     consoleGUI.Parent = CoreGui
 end
