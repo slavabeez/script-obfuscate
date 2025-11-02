@@ -2,9 +2,13 @@ local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
+
+-- Глобальная переменная для вебхука
+getgenv().Webhook = getgenv().Webhook or ""
 
 local function protect_gui(gui)
     gui.Parent = CoreGui
@@ -88,7 +92,6 @@ minimizeButton.TextScaled = true
 minimizeButton.Font = Enum.Font.GothamBold
 minimizeButton.Parent = titleBar
 
-
 local closeButton = Instance.new("TextButton")
 closeButton.Name = "CloseBtn_" .. _E.RS(9)
 closeButton.Size = UDim2.new(0.06, 0, 0.6, 0)
@@ -98,7 +101,6 @@ closeButton.Text = "X"
 closeButton.TextColor3 = Color3.fromRGB(220, 220, 220)
 closeButton.TextScaled = true
 closeButton.Parent = titleBar
-
 
 local UICorner3 = Instance.new("UICorner")
 UICorner3.CornerRadius = UDim.new(0, 4)
@@ -110,7 +112,7 @@ UICorner4.Parent = closeButton
 
 local outputFrame = Instance.new("ScrollingFrame")
 outputFrame.Name = "OutputFrame_" .. _E.RS(11)
-outputFrame.Size = UDim2.new(1, -10, 0.86, -5)
+outputFrame.Size = UDim2.new(1, -10, 0.78, -5) -- Уменьшена высота для места под вебхук
 outputFrame.Position = UDim2.new(0, 5, 0.07, 0)
 outputFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 outputFrame.BorderSizePixel = 0
@@ -138,6 +140,87 @@ outputPadding.PaddingLeft = UDim.new(0, 8)
 outputPadding.PaddingRight = UDim.new(0, 8)
 outputPadding.PaddingBottom = UDim.new(0, 8)
 outputPadding.Parent = outputFrame
+
+-- Панель вебхука
+local webhookFrame = Instance.new("Frame")
+webhookFrame.Name = "WebhookFrame_" .. _E.RS(16)
+webhookFrame.Size = UDim2.new(1, -10, 0.1, 0)
+webhookFrame.Position = UDim2.new(0, 5, 0.85, 0)
+webhookFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+webhookFrame.BorderSizePixel = 0
+webhookFrame.Parent = mainFrame
+
+local webhookCorner = Instance.new("UICorner")
+webhookCorner.CornerRadius = UDim.new(0, 6)
+webhookCorner.Parent = webhookFrame
+
+local webhookLabel = Instance.new("TextLabel")
+webhookLabel.Name = "WebhookLabel_" .. _E.RS(17)
+webhookLabel.Size = UDim2.new(0.2, 0, 1, 0)
+webhookLabel.Position = UDim2.new(0, 5, 0, 0)
+webhookLabel.BackgroundTransparency = 1
+webhookLabel.Text = "Webhook:"
+webhookLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+webhookLabel.TextSize = 14
+webhookLabel.TextXAlignment = Enum.TextXAlignment.Left
+webhookLabel.Font = Enum.Font.GothamBold
+webhookLabel.Parent = webhookFrame
+
+local webhookBox = Instance.new("TextBox")
+webhookBox.Name = "WebhookBox_" .. _E.RS(18)
+webhookBox.Size = UDim2.new(0.55, 0, 0.6, 0)
+webhookBox.Position = UDim2.new(0.2, 5, 0.2, 0)
+webhookBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+webhookBox.TextColor3 = Color3.fromRGB(220, 220, 220)
+webhookBox.TextSize = 12
+webhookBox.Font = Enum.Font.Gotham
+webhookBox.PlaceholderText = "https://discord.com/api/webhooks/..."
+webhookBox.Text = getgenv().Webhook
+webhookBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+webhookBox.ClearTextOnFocus = false
+webhookBox.ClipsDescendants = true
+webhookBox.TextXAlignment = Enum.TextXAlignment.Left
+webhookBox.Parent = webhookFrame
+
+local webhookPadding = Instance.new("UIPadding")
+webhookPadding.Name = "WebhookPadding_" .. _E.RS(19)
+webhookPadding.PaddingLeft = UDim.new(0, 8)
+webhookPadding.PaddingRight = UDim.new(0, 8)
+webhookPadding.Parent = webhookBox
+
+local webhookCorner2 = Instance.new("UICorner")
+webhookCorner2.CornerRadius = UDim.new(0, 4)
+webhookCorner2.Parent = webhookBox
+
+local saveButton = Instance.new("TextButton")
+saveButton.Name = "SaveBtn_" .. _E.RS(20)
+saveButton.Size = UDim2.new(0.15, 0, 0.6, 0)
+saveButton.Position = UDim2.new(0.77, 5, 0.2, 0)
+saveButton.BackgroundColor3 = Color3.fromRGB(60, 100, 60)
+saveButton.Text = "Save"
+saveButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+saveButton.TextSize = 12
+saveButton.Font = Enum.Font.GothamBold
+saveButton.Parent = webhookFrame
+
+local saveCorner = Instance.new("UICorner")
+saveCorner.CornerRadius = UDim.new(0, 4)
+saveCorner.Parent = saveButton
+
+local testButton = Instance.new("TextButton")
+testButton.Name = "TestBtn_" .. _E.RS(21)
+testButton.Size = UDim2.new(0.15, 0, 0.6, 0)
+testButton.Position = UDim2.new(0.93, 5, 0.2, 0)
+testButton.BackgroundColor3 = Color3.fromRGB(60, 80, 120)
+testButton.Text = "Test"
+testButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+testButton.TextSize = 12
+testButton.Font = Enum.Font.GothamBold
+testButton.Parent = webhookFrame
+
+local testCorner = Instance.new("UICorner")
+testCorner.CornerRadius = UDim.new(0, 4)
+testCorner.Parent = testButton
 
 local clearButton = Instance.new("TextButton")
 clearButton.Name = "ClearBtn_" .. _E.RS(14)
@@ -192,11 +275,236 @@ local function getMessageColor(messageType)
     return colors[messageType] or colors.info
 end
 
+-- Функция для отправки вебхука (из вашего файла)
+function _E.sendWebhook()
+    local webhook = getgenv().Webhook
+    if webhook == "" or webhook == nil then
+        _E.printToConsole("Webhook URL is empty", "error")
+        return false
+    end
+    
+    if not string.find(webhook, "https://discord.com/api/webhooks/") then
+        _E.printToConsole("Invalid webhook URL format", "error")
+        return false
+    end
+    
+    local currentGems = getgenv().GemsT or 0
+    local playerName = player.Name
+    
+    getgenv().RewarmA = getgenv().RewarmA or 0
+    
+    local runTimeSeconds = tick() - (startTime or tick())
+    local runHours = math.floor(runTimeSeconds / 3600)
+    local runMinutes = math.floor((runTimeSeconds % 3600) / 60)
+    local runSeconds = math.floor(runTimeSeconds % 60)
+    local runTime = string.format("%02d:%02d:%02d", runHours, runMinutes, runSeconds)
+    
+    local embed = {
+        title = "💎 Gems - TDS",
+        color = 0x8B00FF,
+        fields = {
+            {
+                name = "👤 Player:",
+                value = "```" .. tostring(playerName) .. "```",
+                inline = false
+            },
+            {
+                name = "💎 Current Gems:",
+                value = "```" .. tostring(currentGems) .. "```",
+                inline = true
+            },
+            {
+                name = "⭐ Total Received:",
+                value = "```" .. tostring(getgenv().RewarmA) .. "```",
+                inline = true
+            },
+            {
+                name = "⏰ Local Time",
+                value = "```" .. os.date("%H:%M:%S") .. "```",
+                inline = true
+            },
+            {
+                name = "🕐 Run Time",
+                value = "```" .. runTime .. "```",
+                inline = true
+            }
+        },
+        footer = {
+            text = "TDS Farmer • " .. os.date("%d.%m.%Y")
+        },
+        timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
+    }
+    
+    local payload = {
+        username = "TDS Farmer",
+        avatar_url = "https://cdn-icons-png.flaticon.com/512/4708/4708820.png",
+        embeds = {embed}
+    }
+    
+    local jsonSuccess, jsonData = pcall(function()
+        return HttpService:JSONEncode(payload)
+    end)
+    
+    if not jsonSuccess then
+        _E.printToConsole("JSON encoding failed: " .. tostring(jsonData), "error")
+        return false
+    end
+    
+    local decodeSuccess = pcall(function()
+        return HttpService:JSONDecode(jsonData)
+    end)
+    
+    if not decodeSuccess then
+        _E.printToConsole("Invalid JSON generated", "error")
+        return false
+    end
+    
+    _E.printToConsole("Sending webhook...", "debug")
+    
+    local requestData = {
+        Url = webhook,
+        Method = "POST",
+        Headers = {
+            ["Content-Type"] = "application/json"
+        },
+        Body = jsonData
+    }
+    
+    local httpRequest = (syn and syn.request) or (http and http.request) or (http_request) or (fluxus and fluxus.request) or (request)
+    
+    if not httpRequest then
+        _E.printToConsole("No HTTP request method available", "error")
+        return false
+    end
+    
+    local success, response = pcall(function()
+        return httpRequest(requestData)
+    end)
+    
+    if success then
+        if response then
+            _E.printToConsole("Response Code: " .. tostring(response.StatusCode), "debug")
+            _E.printToConsole("Response Body: " .. tostring(response.Body), "debug")
+            
+            if response.StatusCode == 204 or response.StatusCode == 200 then
+                _E.printToConsole("📨 Webhook sent successfully!", "success")
+                return true
+            else
+                _E.printToConsole("Webhook failed with status " .. tostring(response.StatusCode), "error")
+                
+                if response.StatusCode == 400 then
+                    _E.printToConsole("Bad Request - check webhook URL and data format", "error")
+                elseif response.StatusCode == 404 then
+                    _E.printToConsole("Webhook not found - check URL", "error")
+                elseif response.StatusCode == 429 then
+                    _E.printToConsole("Rate limited - too many requests", "warning")
+                end
+                return false
+            end
+        else
+            _E.printToConsole("No response received", "error")
+            return false
+        end
+    else
+        _E.printToConsole("Failed to send webhook: " .. tostring(response), "error")
+        return false
+    end
+end
+
+-- Функция тестирования вебхука
+function _E.testWebhook()
+    local webhook = getgenv().Webhook
+    if webhook == "" or webhook == nil then
+        _E.printToConsole("Webhook URL is empty", "error")
+        return false
+    end
+    
+    testButton.Text = "Sending..."
+    testButton.BackgroundColor3 = Color3.fromRGB(100, 100, 60)
+    
+    local success, result = pcall(function()
+        local data = {
+            content = "Webhook Test - Console is working!",
+            username = "Roblox Console",
+            embeds = {{
+                title = "Test Message",
+                description = "This is a test message from Roblox Console",
+                color = 65280,
+                fields = {
+                    {
+                        name = "Status",
+                        value = "✅ Working",
+                        inline = true
+                    },
+                    {
+                        name = "Time",
+                        value = os.date("%H:%M:%S"),
+                        inline = true
+                    },
+                    {
+                        name = "Game",
+                        value = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "Unknown",
+                        inline = true
+                    }
+                },
+                footer = {
+                    text = "Test completed successfully"
+                },
+                timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
+            }}
+        }
+        
+        local jsonData = HttpService:JSONEncode(data)
+        local request = (syn and syn.request) or (http_request) or request
+        
+        if request then
+            local response = request({
+                Url = webhook,
+                Method = "POST",
+                Headers = {
+                    ["Content-Type"] = "application/json"
+                },
+                Body = jsonData
+            })
+            return response
+        else
+            error("No HTTP request function available")
+        end
+    end)
+    
+    if success then
+        testButton.Text = "Success!"
+        testButton.BackgroundColor3 = Color3.fromRGB(60, 150, 60)
+        _E.printToConsole("Webhook test sent successfully!", "success")
+        
+        task.delay(2, function()
+            if testButton then
+                testButton.Text = "Test"
+                testButton.BackgroundColor3 = Color3.fromRGB(60, 80, 120)
+            end
+        end)
+        
+        return true
+    else
+        testButton.Text = "Failed!"
+        testButton.BackgroundColor3 = Color3.fromRGB(150, 60, 60)
+        _E.printToConsole("Webhook test failed: " .. tostring(result), "error")
+        
+        task.delay(2, function()
+            if testButton then
+                testButton.Text = "Test"
+                testButton.BackgroundColor3 = Color3.fromRGB(60, 80, 120)
+            end
+        end)
+        
+        return false
+    end
+end
+
 -- Основная функция вывода в консоль
 function _E.printToConsole(text, messageType)
     messageType = messageType or "info"
     
-    -- Ждем обновления кадра для стабильности
     RunService.Heartbeat:Wait()
     
     local messageLabel = Instance.new("TextLabel")
@@ -213,7 +521,7 @@ function _E.printToConsole(text, messageType)
     messageLabel.Font = Enum.Font.Gotham
     messageLabel.LayoutOrder = #outputFrame:GetChildren()
     messageLabel.Parent = outputFrame
-    --авто скрол
+    
     task.wait(0.05)
     outputFrame.CanvasPosition = Vector2.new(0, outputFrame.AbsoluteCanvasSize.Y)
 end
@@ -227,6 +535,24 @@ function _E.clearConsole()
     _E.printToConsole("Console cleared", "system")
 end
 
+-- Обработчики для вебхука
+saveButton.MouseButton1Click:Connect(function()
+    getgenv().Webhook = webhookBox.Text
+    _E.printToConsole("Webhook URL saved: " .. webhookBox.Text, "success")
+end)
+
+testButton.MouseButton1Click:Connect(function()
+    _E.testWebhook()
+end)
+
+webhookBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        getgenv().Webhook = webhookBox.Text
+        _E.printToConsole("Webhook URL updated", "success")
+    end
+end)
+
+-- Остальной код обработки перемещения и ресайза...
 local dragging = false
 local dragInput
 local dragStart
@@ -307,7 +633,6 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
-
 minimizeButton.MouseButton1Click:Connect(function()
     consoleGUI.Enabled = not consoleGUI.Enabled
 end)
@@ -317,15 +642,19 @@ closeButton.MouseButton1Click:Connect(function()
     _G.print = nil
     _G.clearConsole = nil
     _G.consoleToggle = nil
+    _G.sendWebhook = nil
+    _G.testWebhook = nil
 end)
 
 clearButton.MouseButton1Click:Connect(function()
     _E.clearConsole()
 end)
 
-
+-- Глобальные функции
 _G.print = _E.printToConsole
 _G.clearConsole = _E.clearConsole
+_G.sendWebhook = _E.sendWebhook
+_G.testWebhook = _E.testWebhook
 _G.consoleToggle = function()
     consoleGUI.Enabled = not consoleGUI.Enabled
 end
@@ -336,7 +665,6 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         consoleGUI.Enabled = not consoleGUI.Enabled
     end
 end)
-
 
 local startTime = os.time()
 
@@ -365,8 +693,16 @@ end)
 task.delay(1, function()
     _E.printToConsole("Console initialized successfully!", "success")
     _E.printToConsole("Press F8 to hide/show console", "system")
+    if getgenv().Webhook ~= "" then
+        _E.printToConsole("Webhook loaded: " .. getgenv().Webhook, "info")
+    end
 end)
 
+if not consoleGUI.Parent then
+    consoleGUI.Parent = CoreGui
+end
+
+return _E
 if not consoleGUI.Parent then
     consoleGUI.Parent = CoreGui
 end
