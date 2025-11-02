@@ -1,15 +1,60 @@
-local function ReplaceSprintingScript()
+local function ModifyExistingSprintScript()
     local targetPath = game:GetService("ReplicatedStorage").Systems.Character.Game
     local sprintingScript = targetPath:FindFirstChild("Sprinting")
     
-    if sprintingScript then
-        sprintingScript:Destroy()
-        wait(0.1)
+    if not sprintingScript then
+        warn("❌ Скрипт Sprinting не найден по пути: " .. targetPath:GetFullName())
+        return
     end
     
-    local newScript = Instance.new("ModuleScript")
-    newScript.Name = "Sprinting"
-    newScript.Source = [[local module_upvr = {
+    if not sprintingScript:IsA("ModuleScript") then
+        warn("❌ Объект Sprinting не является ModuleScript")
+        return
+    end
+    
+    -- Сохраняем оригинальный код для резервной копии
+    local originalCode = sprintingScript.Source
+    
+    -- Модифицируем код
+    local modifiedCode = originalCode
+    
+    -- 1. Изменяем StaminaLossDisabled на true
+    modifiedCode = modifiedCode:gsub("StaminaLossDisabled = false", "StaminaLossDisabled = true")
+    
+    -- 2. Добавляем поддержание стамины на максимуме
+    if not modifiedCode:find("if module_upvr%.Stamina < module_upvr%.MaxStamina then") then
+        -- Находим место где заканчивается основной цикл и вставляем наш код
+        local insertPosition = modifiedCode:find("end)")
+        if insertPosition then
+            local maintenanceCode = [[
+		if module_upvr.Stamina < module_upvr.MaxStamina then
+			module_upvr.Stamina = module_upvr.MaxStamina
+			module_upvr.__staminaChangedEvent:Fire(module_upvr.Stamina)
+		end
+]]
+            modifiedCode = modifiedCode:sub(1, insertPosition-1) .. maintenanceCode .. modifiedCode:sub(insertPosition)
+        end
+    end
+    
+    -- Применяем изменения
+    sprintingScript.Source = modifiedCode
+    
+    print("✅ Скрипт Sprinting успешно модифицирован!")
+    print("📍 Бесконечная стамина активирована")
+end
+
+-- Альтернативный вариант - более точная замена
+local function ReplaceSprintScriptCode()
+    local targetPath = game:GetService("ReplicatedStorage").Systems.Character.Game
+    local sprintingScript = targetPath:FindFirstChild("Sprinting")
+    
+    if not sprintingScript or not sprintingScript:IsA("ModuleScript") then
+        warn("Скрипт Sprinting не найден")
+        return
+    end
+    
+    -- Полностью заменяем код на модифицированную версию
+    local newCode = [[local module_upvr = {
 	DefaultConfig = {
 		IsSprinting = false;
 		BindsEnabled = true;
@@ -173,8 +218,18 @@ function module_upvr.Destroy(arg1)
 end
 return module_upvr]]
     
-    newScript.Parent = targetPath
-    print("✅ Скрипт Sprinting успешно заменен! Бесконечная стамина активирована.")
+    sprintingScript.Source = newCode
+    print("✅ Код скрипта Sprinting полностью заменен!")
 end
 
-ReplaceSprintingScript()
+-- Автоматически выполняем при запуске
+wait(2) -- Даем время на загрузку игры
+
+-- Пробуем сначала модифицировать, если не получится - заменяем полностью
+local success, error = pcall(ModifyExistingSprintScript)
+if not success then
+    print("⚠️ Модификация не удалась, пробуем полную замену...")
+    pcall(ReplaceSprintScriptCode)
+end
+
+print("🎯 Операция завершена!")
