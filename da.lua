@@ -1,235 +1,137 @@
-local function ModifyExistingSprintScript()
+local function ModifySprintingScript()
+    -- Ждем загрузки
+    wait(3)
+    
     local targetPath = game:GetService("ReplicatedStorage").Systems.Character.Game
     local sprintingScript = targetPath:FindFirstChild("Sprinting")
     
     if not sprintingScript then
-        warn("❌ Скрипт Sprinting не найден по пути: " .. targetPath:GetFullName())
+        warn("❌ Скрипт Sprinting не найден")
         return
     end
     
     if not sprintingScript:IsA("ModuleScript") then
-        warn("❌ Объект Sprinting не является ModuleScript")
+        warn("❌ Объект не является ModuleScript")
         return
     end
     
-    -- Сохраняем оригинальный код для резервной копии
-    local originalCode = sprintingScript.Source
+    print("📝 Найден скрипт Sprinting, модифицируем код...")
     
-    -- Модифицируем код
-    local modifiedCode = originalCode
+    -- Получаем текущий код
+    local currentCode = sprintingScript.Source
     
-    -- 1. Изменяем StaminaLossDisabled на true
+    -- Простые замены для бесконечной стамины
+    local modifiedCode = currentCode
+    
+    -- 1. Включаем бесконечную стамину
     modifiedCode = modifiedCode:gsub("StaminaLossDisabled = false", "StaminaLossDisabled = true")
     
-    -- 2. Добавляем поддержание стамины на максимуме
-    if not modifiedCode:find("if module_upvr%.Stamina < module_upvr%.MaxStamina then") then
-        -- Находим место где заканчивается основной цикл и вставляем наш код
-        local insertPosition = modifiedCode:find("end)")
-        if insertPosition then
-            local maintenanceCode = [[
-		if module_upvr.Stamina < module_upvr.MaxStamina then
-			module_upvr.Stamina = module_upvr.MaxStamina
-			module_upvr.__staminaChangedEvent:Fire(module_upvr.Stamina)
-		end
-]]
-            modifiedCode = modifiedCode:sub(1, insertPosition-1) .. maintenanceCode .. modifiedCode:sub(insertPosition)
+    -- 2. Убираем расход стамины
+    modifiedCode = modifiedCode:gsub("StaminaLoss = 10", "StaminaLoss = 0")
+    modifiedCode = modifiedCode:gsub("StaminaLoss = %d+", "StaminaLoss = 0")
+    
+    -- 3. Увеличиваем восстановление
+    modifiedCode = modifiedCode:gsub("StaminaGain = 20", "StaminaGain = 100")
+    modifiedCode = modifiedCode:gsub("StaminaGain = %d+", "StaminaGain = 100")
+    
+    -- 4. Добавляем поддержание стамины на максимуме
+    if not modifiedCode:find("module_upvr%.Stamina = module_upvr%.MaxStamina") then
+        -- Ищем место для вставки (после основного цикла)
+        local pattern = "end\n%)"
+        local startPos, endPos = modifiedCode:find(pattern)
+        
+        if startPos then
+            local maintenanceCode = "\n\t\tif module_upvr.Stamina < module_upvr.MaxStamina then\n\t\t\tmodule_upvr.Stamina = module_upvr.MaxStamina\n\t\t\tif module_upvr.__staminaChangedEvent then\n\t\t\t\tmodule_upvr.__staminaChangedEvent:Fire(module_upvr.Stamina)\n\t\t\tend\n\t\tend"
+            modifiedCode = modifiedCode:sub(1, endPos) .. maintenanceCode .. modifiedCode:sub(endPos + 1)
+        else
+            -- Альтернативный метод - добавляем в конец функции Init
+            local initEnd = modifiedCode:find("function module_upvr%.Init.*end")
+            if initEnd then
+                local maintenanceCode = "\n\n\t-- Поддержание стамины на максимуме\n\ttask.spawn(function()\n\t\twhile true do\n\t\t\twait(0.5)\n\t\t\tif module_upvr.Stamina < module_upvr.MaxStamina then\n\t\t\t\tmodule_upvr.Stamina = module_upvr.MaxStamina\n\t\t\t\tif module_upvr.__staminaChangedEvent then\n\t\t\t\t\tmodule_upvr.__staminaChangedEvent:Fire(module_upvr.Stamina)\n\t\t\t\tend\n\t\t\tend\n\t\tend\n\tend)"
+                modifiedCode = modifiedCode:sub(1, initEnd - 1) .. maintenanceCode .. "\nend" .. modifiedCode:sub(initEnd)
+            end
         end
     end
     
     -- Применяем изменения
     sprintingScript.Source = modifiedCode
     
-    print("✅ Скрипт Sprinting успешно модифицирован!")
-    print("📍 Бесконечная стамина активирована")
+    print("✅ Код успешно модифицирован!")
+    print("📍 Сохранены все наследники и ссылки")
+    print("⚡ Бесконечная стамина активирована")
+    
+    return true
 end
 
--- Альтернативный вариант - более точная замена
-local function ReplaceSprintScriptCode()
-    local targetPath = game:GetService("ReplicatedStorage").Systems.Character.Game
-    local sprintingScript = targetPath:FindFirstChild("Sprinting")
+-- Альтернативный метод - точечные изменения
+local function PreciseModification()
+    wait(3)
     
-    if not sprintingScript or not sprintingScript:IsA("ModuleScript") then
-        warn("Скрипт Sprinting не найден")
-        return
+    local sprintingScript = game:GetService("ReplicatedStorage").Systems.Character.Game:FindFirstChild("Sprinting")
+    if not sprintingScript then return end
+    
+    local code = sprintingScript.Source
+    
+    -- Создаем модифицированную версию с минимальными изменениями
+    local changesMade = false
+    
+    -- Изменяем только ключевые параметры
+    if code:find("StaminaLossDisabled = false") then
+        code = code:gsub("StaminaLossDisabled = false", "StaminaLossDisabled = true")
+        changesMade = true
     end
     
-    -- Полностью заменяем код на модифицированную версию
-    local newCode = [[local module_upvr = {
-	DefaultConfig = {
-		IsSprinting = false;
-		BindsEnabled = true;
-		StaminaLossDisabled = false;
-		MinStamina = 0;
-		MaxStamina = 100;
-		SprintSpeed = 26;
-		StaminaLoss = 10;
-		StaminaGain = 20;
-	};
-}
-local Network_upvr = require(game.ReplicatedStorage.Modules.Network)
-function module_upvr.ChangeStat(arg1, arg2, arg3)
-	if module_upvr[arg2] then
-		module_upvr[arg2] = arg3
-	end
-end
-local TweenService_upvr = game:GetService("TweenService")
-function module_upvr.Toggle(arg1, arg2)
-	local var6 = game.Players.LocalPlayer.Character
-	if var6 then
-		var6 = game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
-	end
-	if not var6 then
-	else
-		if arg2 then
-			TweenService_upvr:Create(module_upvr.__FOVMultiplier, TweenInfo.new(0.75), {
-				Value = 1.125;
-			}):Play()
-			TweenService_upvr:Create(module_upvr.__speedMultiplier, TweenInfo.new(0.75), {
-				Value = module_upvr.SprintSpeed / (var6:GetAttribute("BaseSpeed") or 16);
-			}):Play()
-			return
-		end
-		TweenService_upvr:Create(module_upvr.__FOVMultiplier, TweenInfo.new(0.75), {
-			Value = 1;
-		}):Play()
-		TweenService_upvr:Create(module_upvr.__speedMultiplier, TweenInfo.new(0.75), {
-			Value = 1;
-		}):Play()
-	end
-end
-function module_upvr.Init(arg1)
-	local LocalPlayer = game.Players.LocalPlayer
-	local Character_upvr = LocalPlayer.Character
-	for i, v in pairs(module_upvr.DefaultConfig) do
-		module_upvr[i] = v
-	end
-	module_upvr.StaminaCap = nil
-	module_upvr.StaminaLossDisabled = true
-	module_upvr.DefaultsSet = true
-	module_upvr.__sprintedEvent = Instance.new("BindableEvent")
-	module_upvr.__staminaChangedEvent = Instance.new("BindableEvent")
-	module_upvr.__speedMultiplier = Instance.new("NumberValue")
-	module_upvr.__speedMultiplier.Value = 1
-	module_upvr.__speedMultiplier.Name = "Sprinting"
-	module_upvr.__speedMultiplier.Parent = Character_upvr:WaitForChild("SpeedMultipliers", 10)
-	module_upvr.__FOVMultiplier = Instance.new("NumberValue")
-	module_upvr.__FOVMultiplier.Value = 1
-	module_upvr.__FOVMultiplier.Name = "Sprinting"
-	module_upvr.__FOVMultiplier.Parent = Character_upvr:WaitForChild("FOVMultipliers", 10)
-	module_upvr.CanSprint = true
-	module_upvr.SprintToggled = module_upvr.__sprintedEvent.Event
-	module_upvr.StaminaChanged = module_upvr.__staminaChangedEvent.Event
-	module_upvr.Stamina = module_upvr.MaxStamina
-	module_upvr.SprintToggled:Connect(function(arg1_2)
-		module_upvr:Toggle(arg1_2)
-	end)
-	local IsSprinting_upvw = module_upvr.IsSprinting
-	local var20_upvw = 0
-	local function _(arg1_3, arg2)
-		local var22
-		local function INLINED_3()
-			var22 = module_upvr
-			return var22.BindsEnabled
-		end
-		if not module_upvr.CanSprint or not INLINED_3() then
-		else
-			var22 = game.ReplicatedStorage.Modules.Device
-			var22 = require(var22):GetPlayerDevice()
-			if var22 == "Mobile" then
-				var22 = Enum.UserInputState.Begin
-				if arg2 ~= var22 then return end
-				local function INLINED_4()
-					var22 = Enum.UserInputState.End
-					return var22
-				end
-				if not IsSprinting_upvw or not INLINED_4() then
-					var22 = Enum.UserInputState.Begin
-				end
-			end
-			var22 = Enum.UserInputState.Begin
-			if var22 == var22 then
-				var22 = module_upvr.Stamina
-				if module_upvr.MinStamina < var22 then
-					var22 = module_upvr.IsSprinting
-					if not var22 then
-						var22 = module_upvr
-						var22.IsSprinting = true
-						var22 = module_upvr.__sprintedEvent:Fire
-						var22(true)
-						var22 = module_upvr.IsSprinting
-						IsSprinting_upvw = var22
-						return
-					end
-				end
-			end
-			var22 = module_upvr.IsSprinting
-			if var22 then
-				var22 = module_upvr
-				var22.IsSprinting = false
-				var22 = module_upvr.__sprintedEvent:Fire
-				var22(false)
-				var22 = module_upvr.IsSprinting
-				IsSprinting_upvw = var22
-				var22 = var20_upvw
-				if 0.1 < var22 then
-					var22 = math.clamp(var20_upvw + 0.1, 0, 3)
-					var20_upvw = var22
-					return
-				end
-				var22 = 0.1
-				var20_upvw = var22
-			end
-		end
-	end
-	task.spawn(function()
-		if not nil then
-		end
-		if not nil then
-		end
-		if nil then
-			if nil < nil then
-				if nil < nil then
-					if nil and not nil and nil ~= "Spectating" then
-						if not nil then
-						end
-						if nil <= nil then
-						end
-					end
-				end
-			end
-		end
-		if module_upvr.Stamina < module_upvr.MaxStamina then
-			module_upvr.Stamina = module_upvr.MaxStamina
-			module_upvr.__staminaChangedEvent:Fire(module_upvr.Stamina)
-		end
-	end)
-	local Keybinds = LocalPlayer.PlayerData.Settings.Keybinds
-	local _, _, _ = pairs({Keybinds.Sprinting.Value, Keybinds["Sprinting~Console"].Value})
-	local _, _, _ = pairs(Enum.KeyCode:GetEnumItems())
-end
-function module_upvr.Destroy(arg1)
-	Network_upvr:RemoveConnection("DisableSprinting", "REMOTE_EVENT")
-	Network_upvr:RemoveConnection("DisableSprintingSV", "BINDABLE_EVENT")
-	Network_upvr:RemoveConnection("GrantStamina", "REMOTE_EVENT")
-	module_upvr.__sprintedEvent:Destroy()
-	module_upvr.__staminaChangedEvent:Destroy()
-	module_upvr.__speedMultiplier:Destroy()
-	module_upvr.__FOVMultiplier:Destroy()
-end
-return module_upvr]]
+    if code:find("StaminaLoss = 10") then
+        code = code:gsub("StaminaLoss = 10", "StaminaLoss = 0")
+        changesMade = true
+    end
     
-    sprintingScript.Source = newCode
-    print("✅ Код скрипта Sprinting полностью заменен!")
+    if code:find("StaminaGain = 20") then
+        code = code:gsub("StaminaGain = 20", "StaminaGain = 100")
+        changesMade = true
+    end
+    
+    -- Добавляем поддержание стамины если его нет
+    if not code:find("module_upvr%.Stamina = module_upvr%.MaxStamina") then
+        -- Вставляем простой цикл поддержания
+        local maintenanceCode = [[
+
+	-- Auto-maintain max stamina
+	task.spawn(function()
+		while true do
+			wait(1)
+			module_upvr.Stamina = module_upvr.MaxStamina
+			if module_upvr.__staminaChangedEvent then
+				module_upvr.__staminaChangedEvent:Fire(module_upvr.Stamina)
+			end
+		end
+	end)]]
+        
+        -- Находим конец функции Init для вставки
+        local initPattern = "function module_upvr%.Init.*\n.*\n.*end"
+        local startPos, endPos = code:find(initPattern)
+        if endPos then
+            code = code:sub(1, endPos - 3) .. maintenanceCode .. "\n\tend" .. code:sub(endPos + 1)
+            changesMade = true
+        end
+    end
+    
+    if changesMade then
+        sprintingScript.Source = code
+        print("✅ Точечная модификация выполнена!")
+        return true
+    else
+        print("ℹ️ Изменения не требуются")
+        return false
+    end
 end
 
--- Автоматически выполняем при запуске
-wait(2) -- Даем время на загрузку игры
+-- Запускаем
+local success, err = pcall(ModifySprintingScript)
 
--- Пробуем сначала модифицировать, если не получится - заменяем полностью
-local success, error = pcall(ModifyExistingSprintScript)
 if not success then
-    print("⚠️ Модификация не удалась, пробуем полную замену...")
-    pcall(ReplaceSprintScriptCode)
+    print("🔄 Первый метод не сработал, пробуем точечную модификацию...")
+    pcall(PreciseModification)
 end
 
 print("🎯 Операция завершена!")
