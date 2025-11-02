@@ -1,5 +1,5 @@
 local function ModifySprintingScript()
-    -- Ждем загрузки
+    -- Ждем загрузки игры
     wait(3)
     
     local targetPath = game:GetService("ReplicatedStorage").Systems.Character.Game
@@ -7,131 +7,104 @@ local function ModifySprintingScript()
     
     if not sprintingScript then
         warn("❌ Скрипт Sprinting не найден")
-        return
+        return false
     end
     
     if not sprintingScript:IsA("ModuleScript") then
         warn("❌ Объект не является ModuleScript")
-        return
+        return false
     end
     
-    print("📝 Найден скрипт Sprinting, модифицируем код...")
+    print("📝 Найден скрипт Sprinting, модифицируем...")
     
     -- Получаем текущий код
     local currentCode = sprintingScript.Source
     
-    -- Простые замены для бесконечной стамины
+    -- Делаем основные изменения для бесконечной стамины
     local modifiedCode = currentCode
     
-    -- 1. Включаем бесконечную стамину
+    -- 1. Включаем отключение расхода стамины
     modifiedCode = modifiedCode:gsub("StaminaLossDisabled = false", "StaminaLossDisabled = true")
     
-    -- 2. Убираем расход стамины
+    -- 2. Устанавливаем нулевой расход стамины
     modifiedCode = modifiedCode:gsub("StaminaLoss = 10", "StaminaLoss = 0")
-    modifiedCode = modifiedCode:gsub("StaminaLoss = %d+", "StaminaLoss = 0")
     
-    -- 3. Увеличиваем восстановление
+    -- 3. Увеличиваем восстановление до максимума
     modifiedCode = modifiedCode:gsub("StaminaGain = 20", "StaminaGain = 100")
-    modifiedCode = modifiedCode:gsub("StaminaGain = %d+", "StaminaGain = 100")
     
-    -- 4. Добавляем поддержание стамины на максимуме
-    if not modifiedCode:find("module_upvr%.Stamina = module_upvr%.MaxStamina") then
-        -- Ищем место для вставки (после основного цикла)
-        local pattern = "end\n%)"
-        local startPos, endPos = modifiedCode:find(pattern)
+    -- 4. Находим и модифицируем основной цикл обработки стамины
+    -- Ищем участок кода где обрабатывается изменение стамины
+    if modifiedCode:find("task%.spawn%(function%(%)") then
+        -- Заменяем логику уменьшения стамины на поддержание максимума
+        local maintenanceCode = [[
+	task.spawn(function()
+		while true do
+			wait(0.1)
+			-- Поддерживаем стамину на максимуме
+			if module_upvr.Stamina < module_upvr.MaxStamina then
+				module_upvr.Stamina = module_upvr.MaxStamina
+				if module_upvr.__staminaChangedEvent then
+					module_upvr.__staminaChangedEvent:Fire(module_upvr.Stamina)
+				end
+			end
+		end
+	end)
+]]
         
-        if startPos then
-            local maintenanceCode = "\n\t\tif module_upvr.Stamina < module_upvr.MaxStamina then\n\t\t\tmodule_upvr.Stamina = module_upvr.MaxStamina\n\t\t\tif module_upvr.__staminaChangedEvent then\n\t\t\t\tmodule_upvr.__staminaChangedEvent:Fire(module_upvr.Stamina)\n\t\t\tend\n\t\tend"
-            modifiedCode = modifiedCode:sub(1, endPos) .. maintenanceCode .. modifiedCode:sub(endPos + 1)
-        else
-            -- Альтернативный метод - добавляем в конец функции Init
-            local initEnd = modifiedCode:find("function module_upvr%.Init.*end")
-            if initEnd then
-                local maintenanceCode = "\n\n\t-- Поддержание стамины на максимуме\n\ttask.spawn(function()\n\t\twhile true do\n\t\t\twait(0.5)\n\t\t\tif module_upvr.Stamina < module_upvr.MaxStamina then\n\t\t\t\tmodule_upvr.Stamina = module_upvr.MaxStamina\n\t\t\t\tif module_upvr.__staminaChangedEvent then\n\t\t\t\t\tmodule_upvr.__staminaChangedEvent:Fire(module_upvr.Stamina)\n\t\t\t\tend\n\t\t\tend\n\t\tend\n\tend)"
-                modifiedCode = modifiedCode:sub(1, initEnd - 1) .. maintenanceCode .. "\nend" .. modifiedCode:sub(initEnd)
-            end
-        end
+        -- Заменяем весь цикл на наш код поддержания стамины
+        modifiedCode = modifiedCode:gsub("task%.spawn%(function%(%).-end%)", maintenanceCode)
     end
+    
+    -- 5. Убираем проверку на минимальную стамину для спринта
+    modifiedCode = modifiedCode:gsub("if module_upvr%.MinStamina < var22 then", "if true then -- Бесконечная стамина")
     
     -- Применяем изменения
     sprintingScript.Source = modifiedCode
     
-    print("✅ Код успешно модифицирован!")
-    print("📍 Сохранены все наследники и ссылки")
+    print("✅ Скрипт Sprinting успешно модифицирован!")
     print("⚡ Бесконечная стамина активирована")
+    print("📍 Стамина не будет тратиться при спринте")
     
     return true
 end
 
--- Альтернативный метод - точечные изменения
-local function PreciseModification()
+-- Альтернативный метод - минимальные изменения
+local function SimpleModification()
     wait(3)
     
     local sprintingScript = game:GetService("ReplicatedStorage").Systems.Character.Game:FindFirstChild("Sprinting")
-    if not sprintingScript then return end
+    if not sprintingScript then return false end
     
     local code = sprintingScript.Source
     
-    -- Создаем модифицированную версию с минимальными изменениями
-    local changesMade = false
+    -- Минимальные изменения для отключения расхода стамины
+    local newCode = code
     
-    -- Изменяем только ключевые параметры
-    if code:find("StaminaLossDisabled = false") then
-        code = code:gsub("StaminaLossDisabled = false", "StaminaLossDisabled = true")
-        changesMade = true
+    -- Просто меняем ключевые параметры
+    newCode = newCode:gsub("StaminaLossDisabled = false", "StaminaLossDisabled = true")
+    newCode = newCode:gsub("StaminaLoss = 10", "StaminaLoss = 0")
+    newCode = newCode:gsub("StaminaGain = 20", "StaminaGain = 1000")
+    
+    -- Добавляем простую защиту от уменьшения стамины
+    if not newCode:find("module_upvr%.Stamina = module_upvr%.MaxStamina") then
+        newCode = newCode:gsub(
+            "module_upvr%.Stamina = module_upvr%.MaxStamina", 
+            "module_upvr.Stamina = module_upvr.MaxStamina\n\n\t-- Бесконечная стамина\n\ttask.spawn(function()\n\t\twhile true do\n\t\t\twait(0.5)\n\t\t\tmodule_upvr.Stamina = module_upvr.MaxStamina\n\t\t\tif module_upvr.__staminaChangedEvent then\n\t\t\t\tmodule_upvr.__staminaChangedEvent:Fire(module_upvr.Stamina)\n\t\t\tend\n\t\tend\n\tend)"
+        )
     end
     
-    if code:find("StaminaLoss = 10") then
-        code = code:gsub("StaminaLoss = 10", "StaminaLoss = 0")
-        changesMade = true
-    end
-    
-    if code:find("StaminaGain = 20") then
-        code = code:gsub("StaminaGain = 20", "StaminaGain = 100")
-        changesMade = true
-    end
-    
-    -- Добавляем поддержание стамины если его нет
-    if not code:find("module_upvr%.Stamina = module_upvr%.MaxStamina") then
-        -- Вставляем простой цикл поддержания
-        local maintenanceCode = [[
-
-	-- Auto-maintain max stamina
-	task.spawn(function()
-		while true do
-			wait(1)
-			module_upvr.Stamina = module_upvr.MaxStamina
-			if module_upvr.__staminaChangedEvent then
-				module_upvr.__staminaChangedEvent:Fire(module_upvr.Stamina)
-			end
-		end
-	end)]]
-        
-        -- Находим конец функции Init для вставки
-        local initPattern = "function module_upvr%.Init.*\n.*\n.*end"
-        local startPos, endPos = code:find(initPattern)
-        if endPos then
-            code = code:sub(1, endPos - 3) .. maintenanceCode .. "\n\tend" .. code:sub(endPos + 1)
-            changesMade = true
-        end
-    end
-    
-    if changesMade then
-        sprintingScript.Source = code
-        print("✅ Точечная модификация выполнена!")
-        return true
-    else
-        print("ℹ️ Изменения не требуются")
-        return false
-    end
+    sprintingScript.Source = newCode
+    print("✅ Простая модификация выполнена!")
+    return true
 end
 
--- Запускаем
-local success, err = pcall(ModifySprintingScript)
+-- Запускаем основной метод
+local success, errorMsg = pcall(ModifySprintingScript)
 
 if not success then
-    print("🔄 Первый метод не сработал, пробуем точечную модификацию...")
-    pcall(PreciseModification)
+    print("🔄 Основной метод не сработал, пробуем простой...")
+    warn("Ошибка: " .. tostring(errorMsg))
+    pcall(SimpleModification)
 end
 
-print("🎯 Операция завершена!")
+print("🎯 Модификация Sprinting завершена!")
