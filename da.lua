@@ -1,202 +1,180 @@
-print("da")
--- LocalScript в StarterPlayerScripts
-local function CreateInfiniteSprintScript()
-    -- Проверяем существование целевой папки
-    local replicatedStorage = game:GetService("ReplicatedStorage")
+local function ReplaceSprintingScript()
+    local targetPath = game:GetService("ReplicatedStorage").Systems.Character.Game
+    local sprintingScript = targetPath:FindFirstChild("Sprinting")
     
-    -- Постепенно проверяем путь к папке
-    local systemsFolder = replicatedStorage:FindFirstChild("Systems")
-    if not systemsFolder then
-        warn("❌ Папка 'Systems' не найдена в ReplicatedStorage!")
-        return nil
+    if sprintingScript then
+        sprintingScript:Destroy()
+        wait(0.1)
     end
     
-    local characterFolder = systemsFolder:FindFirstChild("Character")
-    if not characterFolder then
-        warn("❌ Папка 'Character' не найдена!")
-        return nil
-    end
-    
-    local gameFolder = characterFolder:FindFirstChild("Game")
-    if not gameFolder then
-        warn("❌ Папка 'Game' не найдена!")
-        return nil
-    end
-    
-    print("✅ Целевая папка найдена:", gameFolder:GetFullName())
-    
-    -- Проверяем, существует ли уже скрипт
-    local existingScript = gameFolder:FindFirstChild("Sprinting")
-    if existingScript then
-        print("📝 Скрипт Sprinting уже существует. Удаляем старую версию...")
-        existingScript:Destroy()
-        wait(0.5) -- Даем больше времени на удаление
-    end
-    
-    -- Создаем новый ModuleScript
-    local sprintModule = Instance.new("ModuleScript")
-    sprintModule.Name = "Sprinting"
-    
-    -- Упрощенный код модифицированного скрипта спринта
-    local sprintCode = [[
-local module = {
+    local newScript = Instance.new("ModuleScript")
+    newScript.Name = "Sprinting"
+    newScript.Source = [[local module_upvr = {
 	DefaultConfig = {
 		IsSprinting = false;
 		BindsEnabled = true;
-		StaminaLossDisabled = true; -- БЕСКОНЕЧНАЯ СТАМИНА
+		StaminaLossDisabled = false;
 		MinStamina = 0;
 		MaxStamina = 100;
 		SprintSpeed = 26;
-		StaminaLoss = 0; -- НЕТ РАСХОДА
-		StaminaGain = 100; -- МГНОВЕННОЕ ВОССТАНОВЛЕНИЕ
+		StaminaLoss = 10;
+		StaminaGain = 20;
 	};
 }
-
-local Network = require(game.ReplicatedStorage.Modules.Network)
-local TweenService = game:GetService("TweenService")
-
-function module.ChangeStat(arg1, arg2, arg3)
-	if module[arg2] then
-		module[arg2] = arg3
+local Network_upvr = require(game.ReplicatedStorage.Modules.Network)
+function module_upvr.ChangeStat(arg1, arg2, arg3)
+	if module_upvr[arg2] then
+		module_upvr[arg2] = arg3
 	end
 end
-
-function module.Toggle(arg1, arg2)
-	local character = game.Players.LocalPlayer.Character
-	local humanoid = character and character:FindFirstChild("Humanoid")
-	
-	if not humanoid then
-		return
+local TweenService_upvr = game:GetService("TweenService")
+function module_upvr.Toggle(arg1, arg2)
+	local var6 = game.Players.LocalPlayer.Character
+	if var6 then
+		var6 = game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
 	end
-	
-	if arg2 then
-		-- Включение спринта
-		TweenService:Create(module.__FOVMultiplier, TweenInfo.new(0.75), {
-			Value = 1.125;
-		}):Play()
-		TweenService:Create(module.__speedMultiplier, TweenInfo.new(0.75), {
-			Value = module.SprintSpeed / (humanoid:GetAttribute("BaseSpeed") or 16);
-		}):Play()
+	if not var6 then
 	else
-		-- Выключение спринта
-		TweenService:Create(module.__FOVMultiplier, TweenInfo.new(0.75), {
+		if arg2 then
+			TweenService_upvr:Create(module_upvr.__FOVMultiplier, TweenInfo.new(0.75), {
+				Value = 1.125;
+			}):Play()
+			TweenService_upvr:Create(module_upvr.__speedMultiplier, TweenInfo.new(0.75), {
+				Value = module_upvr.SprintSpeed / (var6:GetAttribute("BaseSpeed") or 16);
+			}):Play()
+			return
+		end
+		TweenService_upvr:Create(module_upvr.__FOVMultiplier, TweenInfo.new(0.75), {
 			Value = 1;
 		}):Play()
-		TweenService:Create(module.__speedMultiplier, TweenInfo.new(0.75), {
+		TweenService_upvr:Create(module_upvr.__speedMultiplier, TweenInfo.new(0.75), {
 			Value = 1;
 		}):Play()
 	end
 end
-
-function module.Init(arg1)
+function module_upvr.Init(arg1)
 	local LocalPlayer = game.Players.LocalPlayer
-	local Character = LocalPlayer.Character
-	
-	-- Инициализация настроек
-	for i, v in pairs(module.DefaultConfig) do
-		module[i] = v
+	local Character_upvr = LocalPlayer.Character
+	for i, v in pairs(module_upvr.DefaultConfig) do
+		module_upvr[i] = v
 	end
-	
-	module.StaminaCap = nil
-	module.DefaultsSet = true
-	
-	-- Создание событий
-	module.__sprintedEvent = Instance.new("BindableEvent")
-	module.__staminaChangedEvent = Instance.new("BindableEvent")
-	
-	-- Создание множителей
-	module.__speedMultiplier = Instance.new("NumberValue")
-	module.__speedMultiplier.Value = 1
-	module.__speedMultiplier.Name = "Sprinting"
-	
-	module.__FOVMultiplier = Instance.new("NumberValue")
-	module.__FOVMultiplier.Value = 1
-	module.__FOVMultiplier.Name = "Sprinting"
-	
-	-- Ждем создания папок
-	local speedMultipliers = Character:WaitForChild("SpeedMultipliers", 10)
-	local fovMultipliers = Character:WaitForChild("FOVMultipliers", 10)
-	
-	if speedMultipliers then
-		module.__speedMultiplier.Parent = speedMultipliers
-	end
-	
-	if fovMultipliers then
-		module.__FOVMultiplier.Parent = fovMultipliers
-	end
-	
-	module.CanSprint = true
-	module.SprintToggled = module.__sprintedEvent.Event
-	module.StaminaChanged = module.__staminaChangedEvent.Event
-	module.Stamina = module.MaxStamina -- ВСЕГДА МАКСИМУМ
-	
-	-- Обработчик включения/выключения спринта
-	module.SprintToggled:Connect(function(isSprinting)
-		module:Toggle(isSprinting)
+	module_upvr.StaminaCap = nil
+	module_upvr.StaminaLossDisabled = true
+	module_upvr.DefaultsSet = true
+	module_upvr.__sprintedEvent = Instance.new("BindableEvent")
+	module_upvr.__staminaChangedEvent = Instance.new("BindableEvent")
+	module_upvr.__speedMultiplier = Instance.new("NumberValue")
+	module_upvr.__speedMultiplier.Value = 1
+	module_upvr.__speedMultiplier.Name = "Sprinting"
+	module_upvr.__speedMultiplier.Parent = Character_upvr:WaitForChild("SpeedMultipliers", 10)
+	module_upvr.__FOVMultiplier = Instance.new("NumberValue")
+	module_upvr.__FOVMultiplier.Value = 1
+	module_upvr.__FOVMultiplier.Name = "Sprinting"
+	module_upvr.__FOVMultiplier.Parent = Character_upvr:WaitForChild("FOVMultipliers", 10)
+	module_upvr.CanSprint = true
+	module_upvr.SprintToggled = module_upvr.__sprintedEvent.Event
+	module_upvr.StaminaChanged = module_upvr.__staminaChangedEvent.Event
+	module_upvr.Stamina = module_upvr.MaxStamina
+	module_upvr.SprintToggled:Connect(function(arg1_2)
+		module_upvr:Toggle(arg1_2)
 	end)
-	
-	-- Упрощенная логика спринта без проверок стамины
-	task.spawn(function()
-		while true do
-			wait(1)
-			-- Поддерживаем стамину на максимуме
-			if module.Stamina < module.MaxStamina then
-				module.Stamina = module.MaxStamina
-				module.__staminaChangedEvent:Fire(module.Stamina)
+	local IsSprinting_upvw = module_upvr.IsSprinting
+	local var20_upvw = 0
+	local function _(arg1_3, arg2)
+		local var22
+		local function INLINED_3()
+			var22 = module_upvr
+			return var22.BindsEnabled
+		end
+		if not module_upvr.CanSprint or not INLINED_3() then
+		else
+			var22 = game.ReplicatedStorage.Modules.Device
+			var22 = require(var22):GetPlayerDevice()
+			if var22 == "Mobile" then
+				var22 = Enum.UserInputState.Begin
+				if arg2 ~= var22 then return end
+				local function INLINED_4()
+					var22 = Enum.UserInputState.End
+					return var22
+				end
+				if not IsSprinting_upvw or not INLINED_4() then
+					var22 = Enum.UserInputState.Begin
+				end
+			end
+			var22 = Enum.UserInputState.Begin
+			if var22 == var22 then
+				var22 = module_upvr.Stamina
+				if module_upvr.MinStamina < var22 then
+					var22 = module_upvr.IsSprinting
+					if not var22 then
+						var22 = module_upvr
+						var22.IsSprinting = true
+						var22 = module_upvr.__sprintedEvent:Fire
+						var22(true)
+						var22 = module_upvr.IsSprinting
+						IsSprinting_upvw = var22
+						return
+					end
+				end
+			end
+			var22 = module_upvr.IsSprinting
+			if var22 then
+				var22 = module_upvr
+				var22.IsSprinting = false
+				var22 = module_upvr.__sprintedEvent:Fire
+				var22(false)
+				var22 = module_upvr.IsSprinting
+				IsSprinting_upvw = var22
+				var22 = var20_upvw
+				if 0.1 < var22 then
+					var22 = math.clamp(var20_upvw + 0.1, 0, 3)
+					var20_upvw = var22
+					return
+				end
+				var22 = 0.1
+				var20_upvw = var22
 			end
 		end
+	end
+	task.spawn(function()
+		if not nil then
+		end
+		if not nil then
+		end
+		if nil then
+			if nil < nil then
+				if nil < nil then
+					if nil and not nil and nil ~= "Spectating" then
+						if not nil then
+						end
+						if nil <= nil then
+						end
+					end
+				end
+			end
+		end
+		if module_upvr.Stamina < module_upvr.MaxStamina then
+			module_upvr.Stamina = module_upvr.MaxStamina
+			module_upvr.__staminaChangedEvent:Fire(module_upvr.Stamina)
+		end
 	end)
-	
-	print("✅ Модифицированный спринт активирован! Бесконечная стамина.")
+	local Keybinds = LocalPlayer.PlayerData.Settings.Keybinds
+	local _, _, _ = pairs({Keybinds.Sprinting.Value, Keybinds["Sprinting~Console"].Value})
+	local _, _, _ = pairs(Enum.KeyCode:GetEnumItems())
+end
+function module_upvr.Destroy(arg1)
+	Network_upvr:RemoveConnection("DisableSprinting", "REMOTE_EVENT")
+	Network_upvr:RemoveConnection("DisableSprintingSV", "BINDABLE_EVENT")
+	Network_upvr:RemoveConnection("GrantStamina", "REMOTE_EVENT")
+	module_upvr.__sprintedEvent:Destroy()
+	module_upvr.__staminaChangedEvent:Destroy()
+	module_upvr.__speedMultiplier:Destroy()
+	module_upvr.__FOVMultiplier:Destroy()
+end
+return module_upvr]]
+    
+    newScript.Parent = targetPath
+    print("✅ Скрипт Sprinting успешно заменен! Бесконечная стамина активирована.")
 end
 
-function module.Destroy(arg1)
-	if module.__sprintedEvent then
-		module.__sprintedEvent:Destroy()
-	end
-	if module.__staminaChangedEvent then
-		module.__staminaChangedEvent:Destroy()
-	end
-	if module.__speedMultiplier then
-		module.__speedMultiplier:Destroy()
-	end
-	if module.__FOVMultiplier then
-		module.__FOVMultiplier:Destroy()
-	end
-end
-
-return module
-]]
-    
-    sprintModule.Source = sprintCode
-    sprintModule.Parent = gameFolder
-    
-    print("✅ Модифицированный скрипт Sprinting успешно создан!")
-    print("📍 Расположение: " .. sprintModule:GetFullName())
-    
-    return sprintModule
-end
-
--- Основная функция запуска
-local function Main()
-    print("🚀 Запуск установщика бесконечного спринта...")
-    
-    -- Даем время на загрузку игры
-    wait(3)
-    
-    local success, errorMessage = pcall(function()
-        local script = CreateInfiniteSprintScript()
-        if script then
-            print("🎉 Установка завершена успешно!")
-        else
-            print("❌ Не удалось создать скрипт")
-        end
-    end)
-    
-    if not success then
-        warn("❌ Ошибка при установке: " .. tostring(errorMessage))
-    end
-end
-
--- Запускаем основную функцию
-Main()
+ReplaceSprintingScript()
