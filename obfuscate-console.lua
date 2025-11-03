@@ -325,7 +325,7 @@ function _E.sendWebhook()
             },
             {
                 name = "🕐 Run Time",
-                value = "```" .. runTime .. "```",
+                value = "```" .. tostring(runTime) .. "```",
                 inline = true
             }
         },
@@ -458,7 +458,7 @@ function _E.sendGemsWebhook(currentGems, totalReceived)
             },
             {
                 name = "🕐 Run Time",
-                value = "```" .. runTime .. "```",
+                value = "```" .. tostring(runTime) .. "```",
                 inline = true
             }
         },
