@@ -26,10 +26,11 @@ userids = {
 [5223184848] = true, --fufudgd
 [9462145577] = true, --Krires
 [551450920] = true, --Krires
-[2463474944] = true, --
+[2463474944] = true, --Hil1433821827273
 [2640005551] = true,
 [4597776413] = true,
 [2227046753] = true,
+[5604991807] = true,
 [3509207211] = true
 }
 return userids
