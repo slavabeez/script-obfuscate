@@ -324,7 +324,7 @@ function _E.sendWebhook()
         return false
     end
     
-    local currentGems = getgenv().GemsT or 0
+    local currentMoney = game:GetService("Players").LocalPlayer.Coins.Value or 0
     local playerName = player.Name
     
     getgenv().RewarmA = getgenv().RewarmA or 0
@@ -346,7 +346,7 @@ function _E.sendWebhook()
             },
             {
                 name = "💰 Current money:",
-                value = "```" .. tostring(currentGems) .. "```",
+                value = "```" .. tostring(currentMoney) .. "```",
                 inline = true
             },
             {
