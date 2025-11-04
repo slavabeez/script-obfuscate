@@ -141,11 +141,11 @@ outputPadding.PaddingRight = UDim.new(0, 8)
 outputPadding.PaddingBottom = UDim.new(0, 8)
 outputPadding.Parent = outputFrame
 
--- Панель вебхука (вертикальное расположение)
+-- Панель вебхука (компактная в правом углу)
 local webhookFrame = Instance.new("Frame")
 webhookFrame.Name = "WebhookFrame_" .. _E.RS(16)
-webhookFrame.Size = UDim2.new(1, -10, 0.1, 0)
-webhookFrame.Position = UDim2.new(0, 5, 0.85, 0)
+webhookFrame.Size = UDim2.new(0.35, 0, 0.1, 0)
+webhookFrame.Position = UDim2.new(0.63, 0, 0.85, 0)
 webhookFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 webhookFrame.BorderSizePixel = 0
 webhookFrame.Parent = mainFrame
@@ -156,23 +156,23 @@ webhookCorner.Parent = webhookFrame
 
 local webhookLabel = Instance.new("TextLabel")
 webhookLabel.Name = "WebhookLabel_" .. _E.RS(17)
-webhookLabel.Size = UDim2.new(1, -10, 0.2, 0)
+webhookLabel.Size = UDim2.new(1, -10, 0.3, 0)
 webhookLabel.Position = UDim2.new(0, 5, 0, 0)
 webhookLabel.BackgroundTransparency = 1
-webhookLabel.Text = "Webhook URL:"
+webhookLabel.Text = "Webhook:"
 webhookLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-webhookLabel.TextSize = 14
+webhookLabel.TextSize = 12
 webhookLabel.TextXAlignment = Enum.TextXAlignment.Left
 webhookLabel.Font = Enum.Font.GothamBold
 webhookLabel.Parent = webhookFrame
 
 local webhookBox = Instance.new("TextBox")
 webhookBox.Name = "WebhookBox_" .. _E.RS(18)
-webhookBox.Size = UDim2.new(1, -10, 0.25, 0)
-webhookBox.Position = UDim2.new(0, 5, 0.2, 0)
+webhookBox.Size = UDim2.new(1, -10, 0.3, 0)
+webhookBox.Position = UDim2.new(0, 5, 0.3, 0)
 webhookBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 webhookBox.TextColor3 = Color3.fromRGB(220, 220, 220)
-webhookBox.TextSize = 12
+webhookBox.TextSize = 10
 webhookBox.Font = Enum.Font.Gotham
 webhookBox.PlaceholderText = "https://discord.com/api/webhooks/..."
 webhookBox.Text = getgenv().Webhook
@@ -184,72 +184,74 @@ webhookBox.Parent = webhookFrame
 
 local webhookPadding = Instance.new("UIPadding")
 webhookPadding.Name = "WebhookPadding_" .. _E.RS(19)
-webhookPadding.PaddingLeft = UDim.new(0, 8)
-webhookPadding.PaddingRight = UDim.new(0, 8)
+webhookPadding.PaddingLeft = UDim.new(0, 5)
+webhookPadding.PaddingRight = UDim.new(0, 5)
 webhookPadding.Parent = webhookBox
 
 local webhookCorner2 = Instance.new("UICorner")
-webhookCorner2.CornerRadius = UDim.new(0, 4)
+webhookCorner2.CornerRadius = UDim.new(0, 3)
 webhookCorner2.Parent = webhookBox
 
--- Контейнер для кнопок (вертикальное расположение)
+-- Контейнер для кнопок (горизонтальное расположение в правом углу)
 local buttonsFrame = Instance.new("Frame")
 buttonsFrame.Name = "ButtonsFrame_" .. _E.RS(22)
-buttonsFrame.Size = UDim2.new(1, -10, 0.45, 0)
-buttonsFrame.Position = UDim2.new(0, 5, 0.5, 0)
+buttonsFrame.Size = UDim2.new(1, -10, 0.3, 0)
+buttonsFrame.Position = UDim2.new(0, 5, 0.65, 0)
 buttonsFrame.BackgroundTransparency = 1
 buttonsFrame.Parent = webhookFrame
 
 local buttonsLayout = Instance.new("UIListLayout")
 buttonsLayout.Name = "ButtonsLayout_" .. _E.RS(23)
-buttonsLayout.FillDirection = Enum.FillDirection.Vertical
-buttonsLayout.Padding = UDim.new(0, 5)
+buttonsLayout.FillDirection = Enum.FillDirection.Horizontal
+buttonsLayout.Padding = UDim.new(0, 3)
+buttonsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
 buttonsLayout.SortOrder = Enum.SortOrder.LayoutOrder
 buttonsLayout.Parent = buttonsFrame
 
+-- Кнопки вебхука (прямоугольные с читаемым текстом)
 local saveButton = Instance.new("TextButton")
 saveButton.Name = "SaveBtn_" .. _E.RS(20)
-saveButton.Size = UDim2.new(1, 0, 0.3, 0)
+saveButton.Size = UDim2.new(0.3, 0, 1, 0)
 saveButton.BackgroundColor3 = Color3.fromRGB(60, 100, 60)
-saveButton.Text = "Save Webhook"
+saveButton.Text = "Save"
 saveButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-saveButton.TextSize = 12
+saveButton.TextSize = 11
 saveButton.Font = Enum.Font.GothamBold
 saveButton.LayoutOrder = 1
 saveButton.Parent = buttonsFrame
 
 local saveCorner = Instance.new("UICorner")
-saveCorner.CornerRadius = UDim.new(0, 4)
+saveCorner.CornerRadius = UDim.new(0, 3)
 saveCorner.Parent = saveButton
 
 local testButton = Instance.new("TextButton")
 testButton.Name = "TestBtn_" .. _E.RS(21)
-testButton.Size = UDim2.new(1, 0, 0.3, 0)
+testButton.Size = UDim2.new(0.3, 0, 1, 0)
 testButton.BackgroundColor3 = Color3.fromRGB(60, 80, 120)
-testButton.Text = "Test Webhook"
+testButton.Text = "Test"
 testButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-testButton.TextSize = 12
+testButton.TextSize = 11
 testButton.Font = Enum.Font.GothamBold
 testButton.LayoutOrder = 2
 testButton.Parent = buttonsFrame
 
 local testCorner = Instance.new("UICorner")
-testCorner.CornerRadius = UDim.new(0, 4)
+testCorner.CornerRadius = UDim.new(0, 3)
 testCorner.Parent = testButton
 
 local sendButton = Instance.new("TextButton")
 sendButton.Name = "SendBtn_" .. _E.RS(24)
-sendButton.Size = UDim2.new(1, 0, 0.3, 0)
+sendButton.Size = UDim2.new(0.35, 0, 1, 0)
 sendButton.BackgroundColor3 = Color3.fromRGB(100, 60, 150)
-sendButton.Text = "Send Gems Webhook"
+sendButton.Text = "Send"
 sendButton.TextColor3 = Color3.fromRGB(220, 220, 220)
-sendButton.TextSize = 12
+sendButton.TextSize = 11
 sendButton.Font = Enum.Font.GothamBold
 sendButton.LayoutOrder = 3
 sendButton.Parent = buttonsFrame
 
 local sendCorner = Instance.new("UICorner")
-sendCorner.CornerRadius = UDim.new(0, 4)
+sendCorner.CornerRadius = UDim.new(0, 3)
 sendCorner.Parent = sendButton
 
 local clearButton = Instance.new("TextButton")
@@ -281,6 +283,7 @@ local resizeCorner = Instance.new("UICorner")
 resizeCorner.CornerRadius = UDim.new(0, 3)
 resizeCorner.Parent = resizeHandle
 
+-- Остальной код функций (без изменений)
 local function getMessageType(messageType)
     local types = {
         info = "[INFO]",
@@ -326,7 +329,6 @@ function _E.sendWebhook()
     
     getgenv().RewarmA = getgenv().RewarmA or 0
     
-    -- ИСПРАВЛЕНО: Используем глобальное startTime
     local runTimeSeconds = tick() - startTime
     local runHours = math.floor(runTimeSeconds / 3600)
     local runMinutes = math.floor((runTimeSeconds % 3600) / 60)
@@ -418,21 +420,12 @@ function _E.sendWebhook()
     if success then
         if response then
             _E.printToConsole("Response Code: " .. tostring(response.StatusCode), "debug")
-            _E.printToConsole("Response Body: " .. tostring(response.Body), "debug")
             
             if response.StatusCode == 204 or response.StatusCode == 200 then
                 _E.printToConsole("📨 Webhook sent successfully!", "success")
                 return true
             else
                 _E.printToConsole("Webhook failed with status " .. tostring(response.StatusCode), "error")
-                
-                if response.StatusCode == 400 then
-                    _E.printToConsole("Bad Request - check webhook URL and data format", "error")
-                elseif response.StatusCode == 404 then
-                    _E.printToConsole("Webhook not found - check URL", "error")
-                elseif response.StatusCode == 429 then
-                    _E.printToConsole("Rate limited - too many requests", "warning")
-                end
                 return false
             end
         else
@@ -460,7 +453,6 @@ function _E.sendGemsWebhook(currentGems, totalReceived)
     
     local playerName = player.Name
     
-    -- ИСПРАВЛЕНО: Используем глобальное startTime
     local runTimeSeconds = tick() - startTime
     local runHours = math.floor(runTimeSeconds / 3600)
     local runMinutes = math.floor((runTimeSeconds % 3600) / 60)
@@ -578,11 +570,10 @@ function _E.testWebhook()
         return false
     end
     
-    testButton.Text = "Sending..."
+    testButton.Text = "..."
     testButton.BackgroundColor3 = Color3.fromRGB(100, 100, 60)
     
     local success, result = pcall(function()
-        -- ИСПРАВЛЕНО: Используем глобальное startTime
         local runTimeSeconds = tick() - startTime
         local runHours = math.floor(runTimeSeconds / 3600)
         local runMinutes = math.floor((runTimeSeconds % 3600) / 60)
@@ -644,26 +635,26 @@ function _E.testWebhook()
     end)
     
     if success then
-        testButton.Text = "Success!"
+        testButton.Text = "OK"
         testButton.BackgroundColor3 = Color3.fromRGB(60, 150, 60)
         _E.printToConsole("Webhook test sent successfully!", "success")
         
         task.delay(2, function()
             if testButton then
-                testButton.Text = "Test Webhook"
+                testButton.Text = "Test"
                 testButton.BackgroundColor3 = Color3.fromRGB(60, 80, 120)
             end
         end)
         
         return true
     else
-        testButton.Text = "Failed!"
+        testButton.Text = "Fail"
         testButton.BackgroundColor3 = Color3.fromRGB(150, 60, 60)
         _E.printToConsole("Webhook test failed: " .. tostring(result), "error")
         
         task.delay(2, function()
             if testButton then
-                testButton.Text = "Test Webhook"
+                testButton.Text = "Test"
                 testButton.BackgroundColor3 = Color3.fromRGB(60, 80, 120)
             end
         end)
@@ -709,7 +700,7 @@ end
 -- Обработчики для вебхука
 saveButton.MouseButton1Click:Connect(function()
     getgenv().Webhook = webhookBox.Text
-    _E.printToConsole("Webhook URL saved: " .. webhookBox.Text, "success")
+    _E.printToConsole("Webhook URL saved", "success")
 end)
 
 testButton.MouseButton1Click:Connect(function()
