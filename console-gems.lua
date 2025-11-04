@@ -112,7 +112,7 @@ UICorner4.Parent = closeButton
 
 local outputFrame = Instance.new("ScrollingFrame")
 outputFrame.Name = "OutputFrame_" .. _E.RS(11)
-outputFrame.Size = UDim2.new(1, -10, 0.78, -5) -- Уменьшена высота для места под вебхук
+outputFrame.Size = UDim2.new(1, -10, 0.78, -5)
 outputFrame.Position = UDim2.new(0, 5, 0.07, 0)
 outputFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 outputFrame.BorderSizePixel = 0
@@ -141,7 +141,7 @@ outputPadding.PaddingRight = UDim.new(0, 8)
 outputPadding.PaddingBottom = UDim.new(0, 8)
 outputPadding.Parent = outputFrame
 
--- Панель вебхука
+-- Панель вебхука (вертикальное расположение)
 local webhookFrame = Instance.new("Frame")
 webhookFrame.Name = "WebhookFrame_" .. _E.RS(16)
 webhookFrame.Size = UDim2.new(1, -10, 0.1, 0)
@@ -156,10 +156,10 @@ webhookCorner.Parent = webhookFrame
 
 local webhookLabel = Instance.new("TextLabel")
 webhookLabel.Name = "WebhookLabel_" .. _E.RS(17)
-webhookLabel.Size = UDim2.new(0.2, 0, 1, 0)
+webhookLabel.Size = UDim2.new(1, -10, 0.2, 0)
 webhookLabel.Position = UDim2.new(0, 5, 0, 0)
 webhookLabel.BackgroundTransparency = 1
-webhookLabel.Text = "Webhook:"
+webhookLabel.Text = "Webhook URL:"
 webhookLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
 webhookLabel.TextSize = 14
 webhookLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -168,8 +168,8 @@ webhookLabel.Parent = webhookFrame
 
 local webhookBox = Instance.new("TextBox")
 webhookBox.Name = "WebhookBox_" .. _E.RS(18)
-webhookBox.Size = UDim2.new(0.55, 0, 0.6, 0)
-webhookBox.Position = UDim2.new(0.2, 5, 0.2, 0)
+webhookBox.Size = UDim2.new(1, -10, 0.25, 0)
+webhookBox.Position = UDim2.new(0, 5, 0.2, 0)
 webhookBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 webhookBox.TextColor3 = Color3.fromRGB(220, 220, 220)
 webhookBox.TextSize = 12
@@ -192,16 +192,31 @@ local webhookCorner2 = Instance.new("UICorner")
 webhookCorner2.CornerRadius = UDim.new(0, 4)
 webhookCorner2.Parent = webhookBox
 
+-- Контейнер для кнопок (вертикальное расположение)
+local buttonsFrame = Instance.new("Frame")
+buttonsFrame.Name = "ButtonsFrame_" .. _E.RS(22)
+buttonsFrame.Size = UDim2.new(1, -10, 0.45, 0)
+buttonsFrame.Position = UDim2.new(0, 5, 0.5, 0)
+buttonsFrame.BackgroundTransparency = 1
+buttonsFrame.Parent = webhookFrame
+
+local buttonsLayout = Instance.new("UIListLayout")
+buttonsLayout.Name = "ButtonsLayout_" .. _E.RS(23)
+buttonsLayout.FillDirection = Enum.FillDirection.Vertical
+buttonsLayout.Padding = UDim.new(0, 5)
+buttonsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+buttonsLayout.Parent = buttonsFrame
+
 local saveButton = Instance.new("TextButton")
 saveButton.Name = "SaveBtn_" .. _E.RS(20)
-saveButton.Size = UDim2.new(0.15, 0, 0.6, 0)
-saveButton.Position = UDim2.new(0.77, 5, 0.2, 0)
+saveButton.Size = UDim2.new(1, 0, 0.3, 0)
 saveButton.BackgroundColor3 = Color3.fromRGB(60, 100, 60)
-saveButton.Text = "Save"
+saveButton.Text = "Save Webhook"
 saveButton.TextColor3 = Color3.fromRGB(220, 220, 220)
 saveButton.TextSize = 12
 saveButton.Font = Enum.Font.GothamBold
-saveButton.Parent = webhookFrame
+saveButton.LayoutOrder = 1
+saveButton.Parent = buttonsFrame
 
 local saveCorner = Instance.new("UICorner")
 saveCorner.CornerRadius = UDim.new(0, 4)
@@ -209,18 +224,33 @@ saveCorner.Parent = saveButton
 
 local testButton = Instance.new("TextButton")
 testButton.Name = "TestBtn_" .. _E.RS(21)
-testButton.Size = UDim2.new(0.15, 0, 0.6, 0)
-testButton.Position = UDim2.new(0.93, 5, 0.2, 0)
+testButton.Size = UDim2.new(1, 0, 0.3, 0)
 testButton.BackgroundColor3 = Color3.fromRGB(60, 80, 120)
-testButton.Text = "Test"
+testButton.Text = "Test Webhook"
 testButton.TextColor3 = Color3.fromRGB(220, 220, 220)
 testButton.TextSize = 12
 testButton.Font = Enum.Font.GothamBold
-testButton.Parent = webhookFrame
+testButton.LayoutOrder = 2
+testButton.Parent = buttonsFrame
 
 local testCorner = Instance.new("UICorner")
 testCorner.CornerRadius = UDim.new(0, 4)
 testCorner.Parent = testButton
+
+local sendButton = Instance.new("TextButton")
+sendButton.Name = "SendBtn_" .. _E.RS(24)
+sendButton.Size = UDim2.new(1, 0, 0.3, 0)
+sendButton.BackgroundColor3 = Color3.fromRGB(100, 60, 150)
+sendButton.Text = "Send Gems Webhook"
+sendButton.TextColor3 = Color3.fromRGB(220, 220, 220)
+sendButton.TextSize = 12
+sendButton.Font = Enum.Font.GothamBold
+sendButton.LayoutOrder = 3
+sendButton.Parent = buttonsFrame
+
+local sendCorner = Instance.new("UICorner")
+sendCorner.CornerRadius = UDim.new(0, 4)
+sendCorner.Parent = sendButton
 
 local clearButton = Instance.new("TextButton")
 clearButton.Name = "ClearBtn_" .. _E.RS(14)
@@ -275,7 +305,10 @@ local function getMessageColor(messageType)
     return colors[messageType] or colors.info
 end
 
--- Функция для отправки вебхука (из вашего файла)
+-- Глобальная переменная для времени старта
+local startTime = tick()
+
+-- Функция для отправки вебхука
 function _E.sendWebhook()
     local webhook = getgenv().Webhook
     if webhook == "" or webhook == nil then
@@ -293,7 +326,8 @@ function _E.sendWebhook()
     
     getgenv().RewarmA = getgenv().RewarmA or 0
     
-    local runTimeSeconds = tick() - (startTime or tick())
+    -- ИСПРАВЛЕНО: Используем глобальное startTime
+    local runTimeSeconds = tick() - startTime
     local runHours = math.floor(runTimeSeconds / 3600)
     local runMinutes = math.floor((runTimeSeconds % 3600) / 60)
     local runSeconds = math.floor(runTimeSeconds % 60)
@@ -426,7 +460,8 @@ function _E.sendGemsWebhook(currentGems, totalReceived)
     
     local playerName = player.Name
     
-    local runTimeSeconds = tick() - (startTime or tick())
+    -- ИСПРАВЛЕНО: Используем глобальное startTime
+    local runTimeSeconds = tick() - startTime
     local runHours = math.floor(runTimeSeconds / 3600)
     local runMinutes = math.floor((runTimeSeconds % 3600) / 60)
     local runSeconds = math.floor(runTimeSeconds % 60)
@@ -547,6 +582,13 @@ function _E.testWebhook()
     testButton.BackgroundColor3 = Color3.fromRGB(100, 100, 60)
     
     local success, result = pcall(function()
+        -- ИСПРАВЛЕНО: Используем глобальное startTime
+        local runTimeSeconds = tick() - startTime
+        local runHours = math.floor(runTimeSeconds / 3600)
+        local runMinutes = math.floor((runTimeSeconds % 3600) / 60)
+        local runSeconds = math.floor(runTimeSeconds % 60)
+        local runTime = string.format("%02d:%02d:%02d", runHours, runMinutes, runSeconds)
+        
         local data = {
             content = "Webhook Test - Console is working!",
             username = "Roblox Console",
@@ -563,6 +605,11 @@ function _E.testWebhook()
                     {
                         name = "Time",
                         value = os.date("%H:%M:%S"),
+                        inline = true
+                    },
+                    {
+                        name = "Run Time",
+                        value = runTime,
                         inline = true
                     },
                     {
@@ -603,7 +650,7 @@ function _E.testWebhook()
         
         task.delay(2, function()
             if testButton then
-                testButton.Text = "Test"
+                testButton.Text = "Test Webhook"
                 testButton.BackgroundColor3 = Color3.fromRGB(60, 80, 120)
             end
         end)
@@ -616,7 +663,7 @@ function _E.testWebhook()
         
         task.delay(2, function()
             if testButton then
-                testButton.Text = "Test"
+                testButton.Text = "Test Webhook"
                 testButton.BackgroundColor3 = Color3.fromRGB(60, 80, 120)
             end
         end)
@@ -667,6 +714,10 @@ end)
 
 testButton.MouseButton1Click:Connect(function()
     _E.testWebhook()
+end)
+
+sendButton.MouseButton1Click:Connect(function()
+    _E.sendGemsWebhook(getgenv().GemsT or 0, getgenv().RewarmA or 0)
 end)
 
 webhookBox.FocusLost:Connect(function(enterPressed)
@@ -780,7 +831,7 @@ _G.print = _E.printToConsole
 _G.clearConsole = _E.clearConsole
 _G.sendWebhook = _E.sendWebhook
 _G.testWebhook = _E.testWebhook
-_G.sendGemsWebhook = _E.sendGemsWebhook  -- ← НОВАЯ ФУНКЦИЯ
+_G.sendGemsWebhook = _E.sendGemsWebhook
 _G.consoleToggle = function()
     consoleGUI.Enabled = not consoleGUI.Enabled
 end
@@ -791,8 +842,6 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         consoleGUI.Enabled = not consoleGUI.Enabled
     end
 end)
-
-local startTime = os.time()
 
 local function formatTime(seconds)
     local hours = math.floor(seconds / 3600)
@@ -808,9 +857,10 @@ local function formatTime(seconds)
     end
 end
 
+-- Обновление времени выполнения
 task.spawn(function()
     while consoleGUI.Parent do
-        local elapsed = os.time() - startTime
+        local elapsed = tick() - startTime
         runtimeLabel.Text = formatTime(elapsed)
         task.wait(1)
     end
