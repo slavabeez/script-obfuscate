@@ -84,7 +84,7 @@ _G.print = function(text, type)
 end
 
 -- === ВЕБХУК ===
-function _E.sendMoneyWebhook(currentCoins, totalReceived)
+function _E.sendWebhook(currentCoins, totalReceived)
     local webhook = getgenv().Webhook
     if not webhook or webhook == "" then return false end
     local runTime = tick() - startTime
@@ -242,7 +242,7 @@ end)
 
 ManualSendBtn.MouseButton1Click:Connect(function()
     local coins = player:FindFirstChild("Coins") and player.Coins.Value or 0
-    _E.sendMoneyWebhook(coins, getgenv().RewarmA or 0)
+    _E.sendWebhook(coins, getgenv().RewarmA or 0)
 end)
 
 -- Драг и Ресайз
