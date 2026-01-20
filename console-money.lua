@@ -1,4 +1,4 @@
--- TDS Farmer V2 - Character Fly-Collect Edition
+-- TDS Farmer V2
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 local CoreGui = game:GetService("CoreGui")
@@ -53,7 +53,7 @@ local TitleText = Instance.new("TextLabel", TitleBar)
 TitleText.Size = UDim2.new(1, -50, 1, 0)
 TitleText.Position = UDim2.new(0, 12, 0, 0)
 TitleText.BackgroundTransparency = 1
-TitleText.Text = "TDS Farmer <font color='#8B00FF'>V2</font> | ITEM TP"
+TitleText.Text = "TDS Farmer <font color='#8B00FF'>V2</font> | GLOBAL MODE"
 TitleText.RichText = true
 TitleText.TextColor3 = Color3.new(1,1,1)
 TitleText.TextSize = 16
@@ -68,8 +68,8 @@ LogFrame.ScrollBarThickness = 2
 LogFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 LogFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
 Instance.new("UIListLayout", LogFrame).Padding = UDim.new(0, 2)
-Instance.new("UIPadding", LogFrame).PaddingLeft = UDim.new(0, 8)
 
+-- ГЛОБАЛЬНЫЙ ПРИНТ
 _G.print = function(text, type)
     type = type or "info"
     local l = Instance.new("TextLabel", LogFrame)
@@ -83,28 +83,106 @@ _G.print = function(text, type)
     LogFrame.CanvasPosition = Vector2.new(0, 999999)
 end
 
--- === ВЕБХУК ===
-function _E.sendWebhook(currentCoins, totalReceived)
+-- === ГЛОБАЛЬНАЯ ФУНКЦИЯ ВЕБХУКА ===
+_G.sendWebhook = function(received, current)
     local webhook = getgenv().Webhook
-    if not webhook or webhook == "" then return false end
-    local runTime = tick() - startTime
+    if not webhook or webhook == "" or webhook == "Paste Webhook URL here..." then
+        warn("Webhook URL is missing!")
+        return
+    end
+
+    -- Расчет времени сессии
+    local runTime = tick() - (startTime or tick())
+    local sessionFormatted = string.format("%02d:%02d:%02d", 
+        math.floor(runTime/3600), 
+        math.floor((runTime%3600)/60), 
+        math.floor(runTime%60)
+    )
+    
+    -- Получение локального времени и даты
+    local localTime = os.date("%H:%M:%S")
+    local localDate = os.date("%d.%m.%Y")
+    local footerTime = os.date("%H:%M")
+
+    -- Определение карты
+    local mapName = "Game"
+    pcall(function() 
+        mapName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name 
+    end)
+
     local payload = {
         ["username"] = "TDS Farmer",
+        ["avatar_url"] = "https://cdn-icons-png.flaticon.com/512/4708/4708820.png",
         ["embeds"] = {{
             ["title"] = "💰 MONEY UPDATE - TDS",
-            ["color"] = 0x8B00FF,
+            ["color"] = 0x8B00FF, -- Фиолетовый цвет как на скрине
             ["fields"] = {
-                {["name"] = "👤 Player", ["value"] = "```" .. player.Name .. "```", ["inline"] = false},
-                {["name"] = "💰 Current Coins", ["value"] = "```" .. tostring(currentCoins) .. "```", ["inline"] = true},
-                {["name"] = "⭐ Total Received", ["value"] = "```" .. tostring(totalReceived) .. "```", ["inline"] = true},
-                {["name"] = "🕐 Session", ["value"] = "```" .. string.format("%02d:%02d:%02d", math.floor(runTime/3600), math.floor((runTime%3600)/60), math.floor(runTime%60)) .. "```", ["inline"] = true}
+                {
+                    ["name"] = "👤 Player",
+                    ["value"] = "```" .. game.Players.LocalPlayer.Name .. "```",
+                    ["inline"] = false
+                },
+                {
+                    ["name"] = "💰 Current Coins",
+                    ["value"] = "```" .. tostring(current or 0) .. "```",
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "⭐ Total Received",
+                    ["value"] = "```" .. tostring(received or 0) .. "```",
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🗺️ Map",
+                    ["value"] = "```" .. mapName .. "```",
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "⌚ Session",
+                    ["value"] = "```" .. sessionFormatted .. "```",
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "⏰ Local Time",
+                    ["value"] = "```" .. localTime .. "```",
+                    ["inline"] = true
+                }
             },
-            ["footer"] = {["text"] = "TDS Farmer V2 • " .. os.date("%d.%m.%Y")}
+            ["footer"] = {
+                ["text"] = "TDS Farmer V2 • " .. localDate .. " • Сегодня, в " .. footerTime
+            }
         }}
     }
-    pcall(function()
+
+    -- Отправка запроса
+    task.spawn(function()
+        local request = (syn and syn.request) or (http_request) or (fluxus and fluxus.request) or request
+        if request then
+            request({
+                Url = webhook,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = game:GetService("HttpService"):JSONEncode(payload)
+            })
+        end
+    end)
+
+
+    task.spawn(function()
         local req = (syn and syn.request) or (http_request) or (fluxus and fluxus.request) or request
-        req({Url = webhook, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = HttpService:JSONEncode(payload)})
+        if req then
+            local success, res = pcall(function()
+                return req({
+                    Url = webhook,
+                    Method = "POST",
+                    Headers = {["Content-Type"] = "application/json"},
+                    Body = HttpService:JSONEncode(payload)
+                })
+            end)
+            if success then _G.print("Webhook sent!", "success") else _G.print("Webhook failed!", "error") end
+        else
+            _G.print("Executor not supported (request func missing)", "error")
+        end
     end)
 end
 
@@ -147,7 +225,7 @@ local ManualSendBtn = Instance.new("TextButton", ControlPanel)
 ManualSendBtn.Size = UDim2.new(0.65, -10, 0, 35)
 ManualSendBtn.Position = UDim2.new(0, 10, 0, 95)
 ManualSendBtn.BackgroundColor3 = Color3.fromRGB(139, 0, 255)
-ManualSendBtn.Text = "SEND MONEY REPORT"
+ManualSendBtn.Text = "TEST WEBHOOK"
 ManualSendBtn.TextColor3 = Color3.new(1,1,1)
 ManualSendBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", ManualSendBtn)
@@ -161,7 +239,7 @@ ClearBtn.TextColor3 = Color3.new(1,1,1)
 ClearBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", ClearBtn)
 
--- === ЛОГИКА ПОЛЕТА ПЕРСОНАЖА (CHARACTER TP) ===
+-- === ЛОГИКА ПОЛЕТА ПЕРСОНАЖА (CHARACTER FLY) ===
 local function updateCollectButton()
     if getgenv().AutoCollect then
         CollectToggleBtn.Text = "AUTO CHARACTER FLY-COLLECT: ON"
@@ -174,7 +252,7 @@ end
 
 task.spawn(function()
     while true do
-        task.wait(0.1)
+        task.wait(0.2)
         if getgenv().AutoCollect then
             pcall(function()
                 local char = player.Character
@@ -185,7 +263,6 @@ task.spawn(function()
                     local target = nil
                     local shortestDistance = 500
 
-                    -- Поиск ближайшего SnowCharm
                     for _, item in ipairs(pickups:GetChildren()) do
                         if item.Name == "SnowCharm" and item:IsA("BasePart") then
                             local distance = (hrp.Position - item.Position).Magnitude
@@ -196,22 +273,16 @@ task.spawn(function()
                         end
                     end
 
-                    -- Если цель найдена, летим к ней
                     if target then
-                        _G.print("Flying to SnowCharm... Dist: " .. math.floor(shortestDistance), "debug")
-                        
-                        -- Рассчитываем время полета исходя из дистанции (скорость)
-                        local travelTime = shortestDistance / 100 -- 100 стадов в секунду
+                        local travelTime = shortestDistance / 120 
                         local tweenInfo = TweenInfo.new(travelTime, Enum.EasingStyle.Linear)
                         
-                        -- Чтобы не падать и не дергаться во время полета
                         hrp.Anchored = true 
                         local tween = TweenService:Create(hrp, tweenInfo, {CFrame = target.CFrame * CFrame.new(0, 2, 0)})
                         tween:Play()
                         tween.Completed:Wait()
                         hrp.Anchored = false
-                        
-                        task.wait(0.5) -- Небольшая пауза на месте сбора
+                        task.wait(0.3)
                     end
                 end
             end)
@@ -219,13 +290,13 @@ task.spawn(function()
     end
 end)
 
+-- === ОБРАБОТЧИКИ UI ===
 CollectToggleBtn.MouseButton1Click:Connect(function()
     getgenv().AutoCollect = not getgenv().AutoCollect
     updateCollectButton()
-    _G.print("Character Collect: " .. tostring(getgenv().AutoCollect), "info")
+    _G.print("Fly-Collect is now " .. (getgenv().AutoCollect and "ENABLED" or "DISABLED"), "info")
 end)
 
--- === СОХРАНЕНИЕ ===
 SaveBtn.MouseButton1Click:Connect(function()
     getgenv().Webhook = WebInput.Text
     local configData = {
@@ -233,21 +304,22 @@ SaveBtn.MouseButton1Click:Connect(function()
         AutoCollect = getgenv().AutoCollect
     }
     pcall(function() writefile(CONFIG_FILE, HttpService:JSONEncode(configData)) end)
-    _G.print("Settings saved to " .. CONFIG_FILE, "success")
+    _G.print("Config saved to " .. CONFIG_FILE, "success")
+end)
+
+ManualSendBtn.MouseButton1Click:Connect(function()
+    local c = player:FindFirstChild("Coins") and player.Coins.Value or 0
+    local r = getgenv().RewarmA or 0
+    _G.sendWebhook(r, c)
 end)
 
 ClearBtn.MouseButton1Click:Connect(function()
     for _, v in pairs(LogFrame:GetChildren()) do if v:IsA("TextLabel") then v:Destroy() end end
 end)
 
-ManualSendBtn.MouseButton1Click:Connect(function()
-    local coins = player:FindFirstChild("Coins") and player.Coins.Value or 0
-    _E.sendWebhook(coins, getgenv().RewarmA or 0)
-end)
-
--- Драг и Ресайз
-local dragging, resizing = false, false
-local dragStart, startPos, startSize
+-- Драг окна
+local dragging = false
+local dragStart, startPos
 TitleBar.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true; dragStart = input.Position; startPos = MainFrame.Position end end)
 UserInputService.InputChanged:Connect(function(input)
     if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
@@ -257,7 +329,7 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
 
--- Загрузка
+-- Загрузка конфига
 if isfile(CONFIG_FILE) then
     pcall(function()
         local data = HttpService:JSONDecode(readfile(CONFIG_FILE))
@@ -268,5 +340,5 @@ if isfile(CONFIG_FILE) then
     end)
 end
 
-_G.print("TDS Farmer V2 Started", "system")
+_G.print("TDS Farmer V2 Loaded", "system")
 return _E
