@@ -156,19 +156,6 @@ _G.sendWebhook = function(received, current)
 
     -- Отправка запроса
     task.spawn(function()
-        local request = (syn and syn.request) or (http_request) or (fluxus and fluxus.request) or request
-        if request then
-            request({
-                Url = webhook,
-                Method = "POST",
-                Headers = {["Content-Type"] = "application/json"},
-                Body = game:GetService("HttpService"):JSONEncode(payload)
-            })
-        end
-    end)
-
-
-    task.spawn(function()
         local req = (syn and syn.request) or (http_request) or (fluxus and fluxus.request) or request
         if req then
             local success, res = pcall(function()
