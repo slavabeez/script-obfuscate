@@ -31,6 +31,7 @@ userids = {
 [498223208] = true, --XxxxNoobs
 [7013427673] = true, --Fog1482
 [3378659261] = true, --zombinoobboom
+[1565191893] = true, --zombinoobboom
 [8130758086] = true,
 [1321436387] = true,
 [2293173453] = true,
