@@ -34,6 +34,7 @@ userids = {
 [1565191893] = true, --Ameclick
 [2420334865] = true, --frorepelitta
 [2652270994] = true, --kolasbyst
+[1320988198] = true, --kolasbyst
 [8130758086] = true,
 [1321436387] = true,
 [2293173453] = true,
