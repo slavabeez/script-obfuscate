@@ -36,6 +36,7 @@ userids = {
 [2652270994] = true, --kolasbyst
 [1320988198] = true, --kolasbyst
 [8130758086] = true, --fadgahda
+[4905800526] = true, --fadgahda
 [4534767150] = true,
 [5202833283] = true,
 [2293173453] = true,
