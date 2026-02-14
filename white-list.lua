@@ -37,6 +37,7 @@ userids = {
 [1320988198] = true, --kolasbyst
 [8130758086] = true, --fadgahda
 [4905800526] = true, --fadgahda
+[2679636571] = true, --Lolmanursobadd
 [1368284135] = true,
 [3585350699] = true,
 [4254361542] = true,
