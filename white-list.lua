@@ -41,9 +41,9 @@ userids = {
 [1909048908] = true, --Lolmanursobadd
 [2726753712] = true,
 [2893354419] = true,
-[4254361542] = true,
-[5027719043] = true,
-[5811770177] = true,
+[4670176453] = true,
+[4411819874] = true,
+[8150502651] = true,
 [4905800526] = true
 }
 return userids
