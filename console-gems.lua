@@ -117,8 +117,8 @@ function _E.sendGemsWebhook(currentGems, totalReceived)
             ["color"] = 0x8B00FF,
             ["fields"] = {
                 {["name"] = "👤 Player", ["value"] = "```" .. player.Name .. "```", ["inline"] = false},
-                {["name"] = "💎 Current Gems", ["value"] = "```" .. tostring(currentGems) .. "```", ["inline"] = true},
-                {["name"] = "⭐ Total Received", ["value"] = "```" .. tostring(totalReceived) .. "```", ["inline"] = true},
+                {["name"] = "💎 Current Gems", ["value"] = "```" .. tostring(totalReceived) .. "```", ["inline"] = true},
+                {["name"] = "⭐ Total Received", ["value"] = "```" .. tostring(currentGems) .. "```", ["inline"] = true},
                 {["name"] = "🗺️ Map", ["value"] = "```" .. mapName .. "```", ["inline"] = true},
                 {["name"] = "🕐 Session", ["value"] = "```" .. string.format("%02d:%02d:%02d", math.floor(runTime/3600), math.floor((runTime%3600)/60), math.floor(runTime%60)) .. "```", ["inline"] = true},
                 {["name"] = "⏰ Local Time", ["value"] = "```" .. timeString .. "```", ["inline"] = true}
