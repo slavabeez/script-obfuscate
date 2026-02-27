@@ -41,9 +41,9 @@ userids = {
 [1909048908] = true, --Lolmanursobadd
 [3136398125] = true, --Artur4ikShop
 [3259579782] = true,
-[3912377401] = true,
+[5124640516] = true,
 [3585350699] = true,
-[4411819874] = true,
+[4545507586] = true,
 [8150502651] = true,
 [683564654] = true
 }
