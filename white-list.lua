@@ -43,6 +43,7 @@ userids = {
 [1909048908] = true, --Lolmanursobadd
 [3136398125] = true, --Artur4ikShop
 [444543818] = true, --Justhaatemee
+[787857557] = true, --mistergeniy
 [1762518487] = true,
 [1933048080] = true,
 [8909967996] = true,
