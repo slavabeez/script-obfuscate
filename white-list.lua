@@ -45,8 +45,8 @@ userids = {
 [444543818] = true, --Justhaatemee
 [787857557] = true, --mistergeniy
 [7117266068] = true,
-[1933048080] = true,
-[8909967996] = true,
+[4810498918] = true,
+[3840639811] = true,
 [4196308622] = true,
 [1736615439] = true
 }
