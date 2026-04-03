@@ -251,7 +251,7 @@ task.spawn(function()
                     local shortestDistance = 500
 
                     for _, item in ipairs(pickups:GetChildren()) do
-                        if item.Name == "SnowCharm" and item:IsA("BasePart") then
+                        if item.Name == "Bunz" and item:IsA("BasePart") then
                             local distance = (hrp.Position - item.Position).Magnitude
                             if distance < shortestDistance then
                                 shortestDistance = distance
