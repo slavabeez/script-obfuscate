@@ -44,6 +44,7 @@ userids = {
 [3136398125] = true, --Artur4ikShop
 [444543818] = true, --Justhaatemee
 [787857557] = true, --mistergeniy
+[4883361125] = true, --gulka229rus
 [2246596529] = true,
 [5515847340] = true,
 [5515847340] = true,
