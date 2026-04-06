@@ -46,6 +46,7 @@ userids = {
 [787857557] = true, --mistergeniy
 [4883361125] = true, --gulka229rus
 [1996000790] = true, --TimoxaSwag
+[1246466955] = true, --TimoxaSwag
 [4578000418] = true,
 [5181717400] = true,
 [5515847340] = true,
