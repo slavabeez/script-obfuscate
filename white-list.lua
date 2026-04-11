@@ -47,6 +47,7 @@ userids = {
 [4883361125] = true, --gulka229rus
 [1996000790] = true, --TimoxaSwag
 [1246466955] = true, --TimoxaSwag
+[459897513] = true, --HedoTankist
 [1469532042] = true,
 [5181717400] = true,
 [5515847340] = true,
