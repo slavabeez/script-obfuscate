@@ -50,6 +50,7 @@ userids = {
 [459897513] = true, --HedoTankist
 [3461671043] = true, --Arangutang222
 [8624505020] = true, --Arangutang222
+[8429934475] = true, --Negros228
 [3632230956] = true,
 [8190522883] = true,
 [1370111239] = true,
